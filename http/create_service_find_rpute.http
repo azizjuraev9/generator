@@ -1,0 +1,226 @@
+# curl -X 'POST'
+#  'https://editor.swagger.io/service'
+#  -H 'accept: application/json'
+#  -H 'Content-Type: application/json'
+#  -d '{
+#  "ast": {
+#    "create_route": {
+#      "func": "string",
+#      "permission": "string",
+#      "role": "string",
+#      "route": "string",
+#      "table": "string"
+#    },
+#    "find_one_route": {
+#      "conditions": [
+#        {
+#          "column": "string",
+#          "op": "string",
+#          "value": "string"
+#        }
+#      ],
+#      "func": "string",
+#      "header": [
+#        {
+#          "name": "string",
+#          "required": true,
+#          "type": "string",
+#          "validator": "string"
+#        }
+#      ],
+#      "joins": [
+#        {
+#          "condition": "string",
+#          "table": "string",
+#          "type": "string"
+#        }
+#      ],
+#      "path": [
+#        {
+#          "name": "string",
+#          "required": true,
+#          "type": "string",
+#          "validator": "string"
+#        }
+#      ],
+#      "permission": "string",
+#      "queries": [
+#        {
+#          "name": "string",
+#          "required": true,
+#          "type": "string",
+#          "validator": "string"
+#        }
+#      ],
+#      "response": {
+#        "fields": [
+#          "string"
+#        ],
+#        "preloads": [
+#          "string"
+#        ]
+#      },
+#      "role": "string",
+#      "route": "string",
+#      "table": "string"
+#    },
+#    "find_route": {
+#      "conditions": [
+#        {
+#          "column": "string",
+#          "op": "string",
+#          "value": "string"
+#        }
+#      ],
+#      "func": "string",
+#      "header": [
+#        {
+#          "name": "string",
+#          "required": true,
+#          "type": "string",
+#          "validator": "string"
+#        }
+#      ],
+#      "joins": [
+#        {
+#          "condition": "string",
+#          "table": "string",
+#          "type": "string"
+#        }
+#      ],
+#      "path": [
+#        {
+#          "name": "string",
+#          "required": true,
+#          "type": "string",
+#          "validator": "string"
+#        }
+#      ],
+#      "permission": "string",
+#      "queries": [
+#        {
+#          "name": "string",
+#          "required": true,
+#          "type": "string",
+#          "validator": "string"
+#        }
+#      ],
+#      "response": {
+#        "fields": [
+#          "string"
+#        ],
+#        "preloads": [
+#          "string"
+#        ]
+#      },
+#      "role": "string",
+#      "route": "string",
+#      "table": "string"
+#    },
+#    "table": {
+#      "fields": [
+#        {
+#          "default": "string",
+#          "is_null": true,
+#          "is_translatable": true,
+#          "name": "string",
+#          "relation": {
+#            "ref_column": "string",
+#            "ref_table": "string",
+#            "table": "string"
+#          },
+#          "type": "string"
+#        }
+#      ],
+#      "table": "string"
+#    },
+#    "update_route": {
+#      "func": "string",
+#      "permission": "string",
+#      "role": "string",
+#      "route": "string",
+#      "table": "string"
+#    }
+#  },
+#  "description": "string",
+#  "multilingual": true,
+#  "name": "string",
+#  "projectId": 0
+#}'
+POST http://localhost:1236/api/v1/service
+accept: application/json
+Content-Type: application/json
+
+{
+  "ast": {
+    "table": {
+      "fields": [
+        {
+          "default": "",
+          "is_null": true,
+          "is_translatable": true,
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "default": "null",
+          "is_null": true,
+          "is_translatable": true,
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "default": "false",
+          "is_null": false,
+          "is_translatable": false,
+          "name": "status",
+          "type": "boolean"
+        }
+      ],
+      "table": "category"
+    },
+    "find_route": [
+      {
+        "conditions": [
+          {
+            "column": "status",
+            "op": "=",
+            "value": "bool.true"
+          },
+          {
+            "column": "id",
+            "op": "=",
+            "value": "path.id"
+          }
+        ],
+        "func": "findOne",
+        "header": [],
+        "joins": [],
+        "path": [
+          {
+            "name": "id",
+            "required": true,
+            "type": "int64",
+            "validator": "int64"
+          }
+        ],
+        "queries": [],
+        "response": {
+          "fields": [
+            "title",
+            "description"
+          ],
+          "preloads": []
+        },
+        "route": "/api/v1/category/{id}"
+      }
+    ]
+  },
+  "description": "string",
+  "multilingual": true,
+  "name": "string",
+  "projectId": 1
+}
+
+###
+

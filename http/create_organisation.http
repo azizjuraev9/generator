@@ -1,0 +1,17 @@
+# curl -X 'POST'
+#  'https://editor.swagger.io/organisation'
+#  -H 'accept: application/json'
+#  -H 'Content-Type: application/json'
+#  -d '{
+#  "name": "string"
+#}'
+POST http://localhost:1236/api/v1/organisation
+accept: application/json
+Content-Type: application/json
+
+{
+  "name": "string"
+}
+
+###
+
