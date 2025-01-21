@@ -76,3 +76,39 @@ func ToSnakeCase(str string) string {
 
 	return result.String()
 }
+
+func GormAnnotations(params interface{}) string {
+
+	var annotations []string
+
+	// Primary key annotation
+	if strings.ToLower(params.Name) == "id" {
+		annotations = append(annotations, "primaryKey")
+	}
+
+	// Nullable annotation
+	if params.IsNull {
+		annotations = append(annotations, "null")
+	} else {
+		annotations = append(annotations, "not null")
+	}
+
+	// Default value annotation
+	if params.Default != "" {
+		annotations = append(annotations, "default:"+params.Default)
+	}
+
+	// Relation annotation
+	if params.Relation != nil {
+		switch params.Relation.Type {
+		case "one-to-one":
+			annotations = append(annotations, "foreignKey:"+params.Name+";references:"+params.Relation.RefColumn)
+		case "one-to-many":
+			annotations = append(annotations, "foreignKey:"+params.Name+";references:"+params.Relation.RefColumn)
+		case "many-to-many":
+			annotations = append(annotations, "many2many:"+params.Relation.RefTable)
+		}
+	}
+
+	return strings.Join(annotations, ";")
+}

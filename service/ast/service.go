@@ -27,6 +27,7 @@ type Field struct {
 
 type Relation struct {
 	Table     string `json:"table"`
+	Type      string `json:"type"`
 	RefTable  string `json:"ref_table"`
 	RefColumn string `json:"ref_column"`
 } //@name Relation
