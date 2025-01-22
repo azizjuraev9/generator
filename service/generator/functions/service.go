@@ -81,34 +81,54 @@ func GormAnnotations(params interface{}) string {
 
 	var annotations []string
 
-	// Primary key annotation
-	if strings.ToLower(params.Name) == "id" {
-		annotations = append(annotations, "primaryKey")
-	}
-
-	// Nullable annotation
-	if params.IsNull {
-		annotations = append(annotations, "null")
-	} else {
-		annotations = append(annotations, "not null")
-	}
-
 	// Default value annotation
 	if params.Default != "" {
 		annotations = append(annotations, "default:"+params.Default)
 	}
 
-	// Relation annotation
-	if params.Relation != nil {
-		switch params.Relation.Type {
-		case "one-to-one":
-			annotations = append(annotations, "foreignKey:"+params.Name+";references:"+params.Relation.RefColumn)
-		case "one-to-many":
-			annotations = append(annotations, "foreignKey:"+params.Name+";references:"+params.Relation.RefColumn)
-		case "many-to-many":
-			annotations = append(annotations, "many2many:"+params.Relation.RefTable)
+	return strings.Join(annotations, ";")
+}
+
+func GormFields(fields []interface{}) string {
+	var gormFields []string
+	for _, field := range fields {
+		var gormField = "\t"
+
+		gormField += ToUpperFirst(ToCamelCase(field.Name)) + "\t"
+		if field.IsNull {
+			gormField += "*"
+		}
+		gormField += ToLower(field.Type)
+		gormField += "\t`json:\"" + ToSnakeCase(field.Name) + "\" gorm:\"" + GormAnnotations(field) + "\"`"
+		if field.Relation != nil {
+			gormField += "\n\t"
+
+			if field.Relation != nil && (field.Relation.Type == "one-to-many" || field.Relation.Type == "many-to-many") {
+				gormField += "[]"
+			}
+
+			gormField += ToUpperFirst(field.Relation.Table) + "\t"
+
+			if field.IsNull {
+				gormField += "*"
+			}
+
+			gormField += ToLowerFirst(field.Relation.Table) + "Model." + ToUpperFirst(field.Relation.Table) + "Model\t"
+			gormField += "\t`json:\"" + ToSnakeCase(field.Relation.Table) + "\""
+			if field.Relation != nil {
+				switch field.Relation.Type {
+				case "one-to-one":
+					gormField += "foreignKey:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn)) + ";references:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn))
+				case "one-to-many":
+					gormField += "foreignKey:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn)) + ";references:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn))
+				case "many-to-one":
+					gormField += "foreignKey:" + ToUpperFirst(ToCamelCase(field.Name))
+				case "many-to-many":
+					gormField += "many2many:" + ToSnakeCase(field.Relation.RefTable)
+				}
+			}
+			gormField += "`"
 		}
 	}
-
-	return strings.Join(annotations, ";")
+	return strings.Join(gormFields, "\n")
 }

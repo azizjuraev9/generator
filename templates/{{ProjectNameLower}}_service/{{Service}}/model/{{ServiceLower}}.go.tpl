@@ -8,9 +8,7 @@ import (
 
 type {{ToUpperFirst(.Table.Name)}}Model struct {
 	Id        int64           `json:"id" gorm:"primaryKey"`
-{{range $field := .Ast.Table.Fields}}
-	{{ToUpperFirst($field.Name)}} {{if $field.IsNull}}}*{{end}}{{ToSnakeCase($field.Type)}} `json:"{{ToSnakeCase($field.Name)}}" gorm:"{GormAnnotations($field)}}"`
-{{end}}
+    {{GormFields(.Ast.Table.Fields)}}
 	CreatedAt *time.Time      `json:"createdAt" gorm:"autoCreateTime:true"`
 	UpdatedAt *time.Time      `json:"updatedAt,omitempty" gorm:"autoUpdateTime:true"`
 	DeletedAt *gorm.DeletedAt `json:"-" swaggerignore:"true"`
