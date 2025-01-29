@@ -1,6 +1,8 @@
 package functions
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -129,6 +131,33 @@ func GormFields(fields []interface{}) string {
 			}
 			gormField += "`"
 		}
+		gormFields = append(gormFields, gormField)
 	}
 	return strings.Join(gormFields, "\n")
+}
+
+func ResolveValue(value string) interface{} {
+	switch {
+	case value == "bool.true":
+		return true
+	case value == "bool.false":
+		return false
+	case strings.HasPrefix(value, "path."):
+		return "path" + ToUpperFirst(ToCamelCase(strings.TrimPrefix(value, "path.")))
+	case strings.HasPrefix(value, "header."):
+		return "header" + ToUpperFirst(ToCamelCase(strings.TrimPrefix(value, "header.")))
+	case strings.HasPrefix(value, "int."):
+		// Преобразуем строку в int
+		intValue, err := strconv.Atoi(strings.TrimPrefix(value, "int."))
+		if err != nil {
+			panic(fmt.Sprintf("invalid integer value: %s", value))
+		}
+		return intValue
+	case strings.HasPrefix(value, "string."):
+		// Оборачиваем строку в кавычки
+		return fmt.Sprintf("\"%s\"", strings.TrimPrefix(value, "string."))
+	default:
+		// По умолчанию возвращаем исходное значение
+		return value
+	}
 }

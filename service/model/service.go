@@ -10,6 +10,7 @@ import (
 type ServiceModel struct {
 	Id           int64           `json:"id" gorm:"primaryKey"`
 	Name         string          `json:"name"`
+	ProjectName  string          `json:"project_name"`
 	ProjectId    int             `json:"projectId" gorm:"not null;index:idx_service_project_id"`
 	Description  string          `json:"description"`
 	Multilingual bool            `json:"multilingual"`
