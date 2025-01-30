@@ -53,7 +53,7 @@ func NewHandler(router *echo.Group, service service.{{ToUpperFirst(ToCamelCase(.
 // @Success      201 {object} response.ID "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
-// @Router       /{{toSnakeCase(.Ast.Table.Name)}} [post]
+// @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}{{.Route}} [{{ToLower(.Method)}}]
 func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Func)}}(c echo.Context) error {
 	var createDto dto.Create{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Dto
 	{
@@ -194,7 +194,7 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}{{.Route}}{{range .Path}}/{{"{"}}{{.Name}}{{"}"}}{{end}} [{{ToLower(.Method)}}]
-func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) GetById(c echo.Context) error {
+func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Func)}}(c echo.Context) error {
 
     {{if gt (len .Queries) 0}}
     var queryDto dto.{{ToUpperFirst(ToCamelCase(.Func))}}QueryDto
@@ -258,11 +258,12 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) GetById(c echo.C
 }
 {{end}}
 
+{{range .Ast.UpdateRouteDto}}
 // Update godoc
 // @Summary      Update {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} information
 // @Description  Update {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} information by ID
 // @Tags 		 {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @ID           update-{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
+// @ID           {{ToUpperFirst(ToCamelCase(.Func))}}
 // @Accept       json
 // @Param        id path string true "{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} ID"
 // @Param        input body dto.Update{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Dto true "{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} information"
@@ -299,6 +300,7 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) Update(c echo.Co
 
 	return http.Response(c).NoContent()
 }
+{{end}}
 
 // Delete godoc
 // @Summary      Delete {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
@@ -326,40 +328,6 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) Delete(c echo.Co
 		}
 
 		if err := e.service.Delete(filter); err != nil {
-			return http.HTTPError(err).BadRequest()
-		}
-	}
-
-	return http.Response(c).NoContent()
-}
-
-// PUT godoc
-// @Summary      put {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @Description  put {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} by ID
-// @Tags 		 {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @ID           change-visibility-{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @Accept       json
-// @Param        id path string true "{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} ID"
-// @Success      204 "Successful operation"
-// @Failure      400 {object} response.ErrorResponse "Bad request"
-// @Failure      500 {object} response.ErrorResponse "Internal server error"
-// @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}/{id} [put]
-func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) ChangeVisibility(c echo.Context) error {
-	var id int64
-	{
-		if !http.PathValue(c.Param("id")).TryInt64(&id) {
-			err := errors.New("parse id error")
-			return http.HTTPError(err).BadRequest()
-		}
-	}
-
-	filter := func(tx *gorm.DB) *gorm.DB {
-		return tx.Where("id", id)
-	}
-
-	err := e.service.ChangeVisibility(filter)
-	{
-		if err != nil {
 			return http.HTTPError(err).BadRequest()
 		}
 	}
