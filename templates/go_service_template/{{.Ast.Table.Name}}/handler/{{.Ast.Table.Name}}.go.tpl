@@ -271,7 +271,7 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}/{id} [patch]
-func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) Update(c echo.Context) error {
+func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Func)}}(c echo.Context) error {
 	var id int64
 	{
 		if !http.PathValue(c.Param("id")).TryInt64(&id) {
