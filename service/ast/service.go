@@ -12,7 +12,7 @@ type Ast struct {
 // ------------------------------------------------------------------------------
 
 type CreateTableDto struct {
-	Table  string  `json:"table"`
+	Name   string  `json:"name"`
 	Fields []Field `json:"fields"`
 } //@name CreateTableDto
 
@@ -68,6 +68,8 @@ type QueryParam struct {
 	Type      string `json:"type"`
 	Validator string `json:"validator"`
 	Required  bool   `json:"required"`
+	Column    string `json:"column"`
+	Op        string `json:"op"`
 } //@name QueryParam
 
 type Response struct {
