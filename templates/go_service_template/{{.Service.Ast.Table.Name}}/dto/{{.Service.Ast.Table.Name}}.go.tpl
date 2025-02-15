@@ -1,26 +1,26 @@
 package dto
 
 import (
-	"{{toSnakeCase(.ProjectName)}}/{{toSnakeCase(.Ast.Table.Name)}}/model"
+	"{{toSnakeCase(.Service.ProjectName)}}/{{toSnakeCase(.Service.Ast.Service.Table.Name)}}/model"
 
 	"github.com/fobus1289/ufa_shared/http/response"
 )
 
-type Page{{ToUpperFirst(.Table.Name)}}ResponseType = response.PaginateResponse[*model.{{ToUpperFirst(.Table.Name)}}Model] // @name Page{{ToUpperFirst(.Table.Name)}}ResponseType
+type Page{{ToUpperFirst(.Service.Table.Name)}}ResponseType = response.PaginateResponse[*model.{{ToUpperFirst(.Service.Table.Name)}}Model] // @name Page{{ToUpperFirst(.Service.Table.Name)}}ResponseType
 
-type Create{{ToUpperFirst(.Table.Name)}}Dto struct {
-{{range $field := .Ast.Table.Fields}}
+type Create{{ToUpperFirst(.Service.Table.Name)}}Dto struct {
+{{range $field := .Service.Ast.Service.Table.Fields}}
 	{{ToUpperFirst($field.Name)}} {{ToSnakeCase($field.Type)}} `json:"{{ToSnakeCase($field.Name)}}"`
 {{end}}
-} //@name Create{{ToUpperFirst(.Table.Name)}}Dto
+} //@name Create{{ToUpperFirst(.Service.Table.Name)}}Dto
 
-type Update{{ToUpperFirst(.Table.Name)}}Dto struct {
-{{range $field := .Ast.Table.Fields}}
+type Update{{ToUpperFirst(.Service.Table.Name)}}Dto struct {
+{{range $field := .Service.Ast.Service.Table.Fields}}
 	{{ToUpperFirst($field.Name)}} *{{ToSnakeCase($field.Type)}} `json:"{{ToSnakeCase($field.Name)}}"`
 {{end}}
-} //@name Update{{ToUpperFirst(.Table.Name)}}Dto
+} //@name Update{{ToUpperFirst(.Service.Table.Name)}}Dto
 
-{{range .Ast.FindRoute}}
+{{range .Service.Ast.FindRoute}}
 {{if gt (len .Queries) 0}}
 type {{ToUpperFirst(ToCamelCase(.Func))}}QueryDto struct {
     {{range $query := .Queries}}
@@ -30,7 +30,7 @@ type {{ToUpperFirst(ToCamelCase(.Func))}}QueryDto struct {
 {{end}}
 {{end}}
 
-{{range .Ast.FindOneRouteDto}}
+{{range .Service.Ast.FindOneRouteDto}}
 {{if gt (len .Queries) 0}}
 type {{ToUpperFirst(ToCamelCase(.Func))}}QueryDto struct {
     {{range $query := .Queries}}

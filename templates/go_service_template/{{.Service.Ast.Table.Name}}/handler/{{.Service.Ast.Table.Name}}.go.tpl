@@ -3,9 +3,9 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"{{toSnakeCase(.ProjectName)}}/{{toSnakeCase(.Ast.Table.Name)}}/dto"
-	_ "{{toSnakeCase(.ProjectName)}}/{{toSnakeCase(.Ast.Table.Name)}}/model"
-	"{{toSnakeCase(.ProjectName)}}/{{toSnakeCase(.Ast.Table.Name)}}/service"
+	"{{toSnakeCase(.ProjectName)}}/{{toSnakeCase(.Service.Ast.Table.Name)}}/dto"
+	_ "{{toSnakeCase(.ProjectName)}}/{{toSnakeCase(.Service.Ast.Table.Name)}}/model"
+	"{{toSnakeCase(.ProjectName)}}/{{toSnakeCase(.Service.Ast.Table.Name)}}/service"
 	"strconv"
 	"strings"
 
@@ -16,46 +16,46 @@ import (
 	"gorm.io/gorm"
 )
 
-type {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler struct {
-	service service.{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Service
+type {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}Handler struct {
+	service service.{{ToUpperFirst(ToCamelCase(.Service.Ast.Table.Name))}}Service
 }
 
-func NewHandler(router *echo.Group, service service.{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Service) {
+func NewHandler(router *echo.Group, service service.{{ToUpperFirst(ToCamelCase(.Service.Ast.Table.Name))}}Service) {
 
-	group := router.Group("/{{toSnakeCase(.Ast.Table.Name)}}")
+	group := router.Group("/{{toSnakeCase(.Service.Ast.Table.Name)}}")
 	{
-		handler := &{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler{service: service}
+		handler := &{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}Handler{service: service}
 
 
-    {{range .Ast.FindRouteDto}}
-	    group.{{ToUpper(.Method)}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{ToUpperFirst(toCamelCase(.Func))}})
-	{{end}}{{range .Ast.FindOneRouteDto}}
-        group.{{ToLower(.Method)}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{ToUpperFirst(toCamelCase(.Func))}})
-    {{end}}{{range .Ast.CreateRouteDto}}
-        group.{{ToLower(.Method)}}("{{.Route}}", handler.{{ToUpperFirst(toCamelCase(.Func))}})
-    {{end}}{{range .Ast.UpdateRouteDto}}
-        group.{{ToLower(.Method)}}("{{.Route}}/:id", handler.{{ToUpperFirst(toCamelCase(.Func))}})
+    {{range .Service.Ast.FindRouteDto}}
+	    group.{{ToUpper(.Method)}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{ToUpperFirst(toCamelCase(.Service.Func))}})
+	{{end}}{{range .Service.Ast.FindOneRouteDto}}
+        group.{{ToLower(.Method)}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{ToUpperFirst(toCamelCase(.Service.Func))}})
+    {{end}}{{range .Service.Ast.CreateRouteDto}}
+        group.{{ToLower(.Method)}}("{{.Route}}", handler.{{ToUpperFirst(toCamelCase(.Service.Func))}})
+    {{end}}{{range .Service.Ast.UpdateRouteDto}}
+        group.{{ToLower(.Method)}}("{{.Route}}/:id", handler.{{ToUpperFirst(toCamelCase(.Service.Func))}})
     {{end}}
 
 	}
 }
 
 
-{{range .Ast.CreateRouteDto}}
-// {{ToUpperFirst(toCamelCase(.Func)}} godoc
-// @Summary      Create a new {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @Description  Create {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @Tags 		 {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @ID           {{ToUpperFirst(toCamelCase(.Func)}}
+{{range .Service.Ast.CreateRouteDto}}
+// {{ToUpperFirst(toCamelCase(.Service.Func)}} godoc
+// @Summary      Create a new {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
+// @Description  Create {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
+// @Tags 		 {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
+// @ID           {{ToUpperFirst(toCamelCase(.Service.Func)}}
 // @Accept       json
 // @Produce      json
-// @Param        input body dto.Create{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Dto true "{{toSnakeCase(.Ast.Table.Name)}} information"
+// @Param        input body dto.Create{{ToUpperFirst(ToCamelCase(.Service.Ast.Table.Name))}}Dto true "{{toSnakeCase(.Service.Ast.Table.Name)}} information"
 // @Success      201 {object} response.ID "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
-// @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}{{.Route}} [{{ToLower(.Method)}}]
-func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Func)}}(c echo.Context) error {
-	var createDto dto.Create{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Dto
+// @Router       /{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}{{.Route}} [{{ToLower(.Method)}}]
+func (e *{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Service.Func)}}(c echo.Context) error {
+	var createDto dto.Create{{ToUpperFirst(ToCamelCase(.Service.Ast.Table.Name))}}Dto
 	{
 		if err := c.Bind(&createDto); err != nil {
 			return http.HTTPError(err).BadRequest()
@@ -77,12 +77,12 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 }
 {{end}}
 
-{{range .Ast.FindRoute}}
-// {{ToUpperFirst(ToCamelCase(.Func))}} godoc
+{{range .Service.Ast.FindRoute}}
+// {{ToUpperFirst(ToCamelCase(.Service.Func))}} godoc
 // @Summary      {{.Description}}
 // @Description  {{.Description}}
-// @Tags         {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @ID           {{ToUpperFirst(ToCamelCase(.Func))}}
+// @Tags         {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
+// @ID           {{ToUpperFirst(ToCamelCase(.Service.Func))}}
 // @Accept       json
 // @Produce      json
 {{range .Queries}}
@@ -99,8 +99,8 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 // @Success      200 {object} response.ID "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
-// @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}{{.Route}}{{range .Path}}/{{"{"}}{{.Name}}{{"}"}}{{end}} [{{ToLower(.Method)}}]
-func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Func)}}(c echo.Context) error {
+// @Router       /{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}{{.Route}}{{range .Path}}/{{"{"}}{{.Name}}{{"}"}}{{end}} [{{ToLower(.Method)}}]
+func (e *{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Service.Func)}}(c echo.Context) error {
 	var (
 	    {{range .Path}}
         path{{ToUpperFirst(ToCamelCase(.Name))}} = c.Param("{{.Name}}")
@@ -115,7 +115,7 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 	)
 
 	{{if gt (len .Queries) 0}}
-	var queryDto dto.{{ToUpperFirst(ToCamelCase(.Func))}}QueryDto
+	var queryDto dto.{{ToUpperFirst(ToCamelCase(.Service.Func))}}QueryDto
     {
         if err := c.Bind(&queryDto); err != nil {
             return http.HTTPError(err).BadRequest()
@@ -172,12 +172,12 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 }
 {{end}}
 
-{{range .Ast.FindOneRouteDto}}
+{{range .Service.Ast.FindOneRouteDto}}
 // GetById godoc
-// @Summary      GetContent {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} by ID
-// @Description  GetContent {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} by ID
-// @Tags 		 {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @ID           {{ToUpperFirst(ToCamelCase(.Func))}}
+// @Summary      GetContent {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} by ID
+// @Description  GetContent {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} by ID
+// @Tags 		 {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
+// @ID           {{ToUpperFirst(ToCamelCase(.Service.Func))}}
 // @Accept       json
 // @Produce      json
 {{range .Queries}}
@@ -189,15 +189,15 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 {{range .Headers}}
 // @Param        {{.Name}} header {{.Type}} true "{{.Description}}"
 {{end}}
-// @Param        id path string true "{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} ID"
-// @Success      200 {object} model.{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Model "Successful operation"
+// @Param        id path string true "{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} ID"
+// @Success      200 {object} model.{{ToUpperFirst(ToCamelCase(.Service.Ast.Table.Name))}}Model "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
-// @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}{{.Route}}{{range .Path}}/{{"{"}}{{.Name}}{{"}"}}{{end}} [{{ToLower(.Method)}}]
-func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Func)}}(c echo.Context) error {
+// @Router       /{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}{{.Route}}{{range .Path}}/{{"{"}}{{.Name}}{{"}"}}{{end}} [{{ToLower(.Method)}}]
+func (e *{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Service.Func)}}(c echo.Context) error {
 
     {{if gt (len .Queries) 0}}
-    var queryDto dto.{{ToUpperFirst(ToCamelCase(.Func))}}QueryDto
+    var queryDto dto.{{ToUpperFirst(ToCamelCase(.Service.Func))}}QueryDto
     {
         if err := c.Bind(&queryDto); err != nil {
             return http.HTTPError(err).BadRequest()
@@ -247,31 +247,31 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
     filter = filter.Preload("{{.}}")
     {{end}}
 
-	{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}, err := e.service.FindOne(ctx, filter)
+	{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}, err := e.service.FindOne(ctx, filter)
 	{
 		if err != nil {
 			return http.HTTPError(err).BadRequest()
 		}
 	}
 
-	return http.Response(c).OK({{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}})
+	return http.Response(c).OK({{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}})
 }
 {{end}}
 
-{{range .Ast.UpdateRouteDto}}
+{{range .Service.Ast.UpdateRouteDto}}
 // Update godoc
-// @Summary      Update {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} information
-// @Description  Update {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} information by ID
-// @Tags 		 {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @ID           {{ToUpperFirst(ToCamelCase(.Func))}}
+// @Summary      Update {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} information
+// @Description  Update {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} information by ID
+// @Tags 		 {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
+// @ID           {{ToUpperFirst(ToCamelCase(.Service.Func))}}
 // @Accept       json
-// @Param        id path string true "{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} ID"
-// @Param        input body dto.Update{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Dto true "{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} information"
+// @Param        id path string true "{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} ID"
+// @Param        input body dto.Update{{ToUpperFirst(ToCamelCase(.Service.Ast.Table.Name))}}Dto true "{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} information"
 // @Success      204 "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
-// @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}/{id} [patch]
-func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Func)}}(c echo.Context) error {
+// @Router       /{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}/{id} [patch]
+func (e *{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}Handler) {{ToUpperFirst(toCamelCase(.Service.Func)}}(c echo.Context) error {
 	var id int64
 	{
 		if !http.PathValue(c.Param("id")).TryInt64(&id) {
@@ -280,7 +280,7 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 		}
 	}
 
-	var updateDto dto.Update{{ToUpperFirst(ToCamelCase(.Ast.Table.Name))}}Dto
+	var updateDto dto.Update{{ToUpperFirst(ToCamelCase(.Service.Ast.Table.Name))}}Dto
 	{
 		if err := c.Bind(&updateDto); err != nil {
 			return http.HTTPError(err).BadRequest()
@@ -303,17 +303,17 @@ func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) {{ToUpperFirst(t
 {{end}}
 
 // Delete godoc
-// @Summary      Delete {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @Description  Delete {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} by ID
-// @Tags 		 {{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
-// @ID           delete-{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}
+// @Summary      Delete {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
+// @Description  Delete {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} by ID
+// @Tags 		 {{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
+// @ID           delete-{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}
 // @Accept       json
-// @Param        id path string true "{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}} ID"
+// @Param        id path string true "{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}} ID"
 // @Success      204 "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
-// @Router       /{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}/{id} [delete]
-func (e *{{ToLowerFirst(ToCamelCase(.Ast.Table.Name))}}Handler) Delete(c echo.Context) error {
+// @Router       /{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}/{id} [delete]
+func (e *{{ToLowerFirst(ToCamelCase(.Service.Ast.Table.Name))}}Handler) Delete(c echo.Context) error {
 	var id int64
 	{
 		if !http.PathValue(c.Param("id")).TryInt64(&id) {

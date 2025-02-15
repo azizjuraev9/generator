@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
-	sampleHandler "samplePath/{{Service}}/handler"
-	sampleModel "samplePath/{{Service}}/model"
-	sampleService "samplePath/{{Service}}/service"
 	"strconv"
+    {{range .Services}}
+	{{toLower .Ast.Table.Name}}Handler "{{toSnakeCase $.ProjectName}}/{{toLower .Ast.Table.Name}}/handler"
+	{{toLower .Ast.Table.Name}}Model "{{toSnakeCase $.ProjectName}}/{{toLower .Ast.Table.Name}}/model"
+	{{toLower .Ast.Table.Name}}Service "{{toSnakeCase $.ProjectName}}/{{toLower .Ast.Table.Name}}/service"
+    {{end}}
 
 	"gorm.io/gorm"
 
@@ -35,14 +37,16 @@ func main() {
 		}
 
 		db.AutoMigrate(
-			sampleModel.SampleModel{},
+            {{range .Services}}
+			{{toLower .Ast.Table.Name}}Model.{{toUpperFirst .Ast.Table.Name}}Model{},
+            {{end}}
 		)
 	}
 
 	router := echo.New()
 	{
 		setMiddlewares(router)
-		createHandler(router, db)
+		createHandlers(router, db)
 		runHTTPServerOnAddr(router, projectEnv.HttpPort)
 	}
 }
@@ -61,9 +65,11 @@ func setMiddlewares(router *echo.Echo) {
 	router.Use(middleware.CORS())
 }
 
-func createHandler(router *echo.Echo, db *gorm.DB) {
+func createHandlers(router *echo.Echo, db *gorm.DB) {
 	group := router.Group("/api/v1")
 	{
-		sampleHandler.NewHandler(group, sampleService.NewService(db))
+        {{range .Services}}
+		{{toLower .Ast.Table.Name}}Handler.NewHandler(group, {{toLower .Ast.Table.Name}}Service.NewService(db))
+        {{end}}
 	}
 }

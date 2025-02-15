@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"generator/project/dto"
+	"generator/project/generator"
 	_ "generator/project/model"
 	"generator/project/service"
 	"strconv"
@@ -32,8 +33,49 @@ func NewHandler(router *echo.Group, service service.ProjectService) {
 		group.GET("/search", handler.Search)
 		group.PATCH("/:id", handler.Update)
 		group.DELETE("/:id", handler.Delete)
+		group.POST("/generate/:id", handler.Generate)
 
 	}
+}
+
+// Generate godoc
+// @Summary      GetContent project by ID
+// @Description  GetContent project by ID
+// @Tags 		 project
+// @ID           generate-project
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "project ID"
+// @Success      200 {object} model.ProjectModel "Successful operation"
+// @Failure      400 {object} response.ErrorResponse "Bad request"
+// @Failure      500 {object} response.ErrorResponse "Internal server error"
+// @Router       /project/{id} [get]
+func (e *projectHandler) Generate(c echo.Context) error {
+
+	var id int64
+	{
+		if !http.PathValue(c.Param("id")).TryInt64(&id) {
+			err := errors.New("error parse id")
+			return http.HTTPError(err).BadRequest()
+		}
+	}
+
+	ctx := c.Request().Context()
+
+	filter := func(tx *gorm.DB) *gorm.DB {
+		return tx.Where("id = ?", id).Where("is_visible = ?", true)
+	}
+
+	project, err := e.service.FindOne(ctx, filter)
+	{
+		if err != nil {
+			return http.HTTPError(err).BadRequest()
+		}
+	}
+
+	generator.Generate("./templates", "./generated"+project.Name, project.Services)
+
+	return http.Response(c).OK(project)
 }
 
 // Create godoc
