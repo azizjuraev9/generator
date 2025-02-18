@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"{{.Service.ProjectName | ToSnakeCase}}/{{.Service.Ast.Table.Name | ToSnakeCase}}/model"
+	"{{.Service.ProjectName | ToCamelCase}}/{{.Service.Ast.Table.Name | ToSnakeCase}}/model"
 
 	"github.com/fobus1289/ufa_shared/http/response" //
 )

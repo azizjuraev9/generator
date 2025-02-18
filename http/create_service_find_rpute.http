@@ -7,6 +7,7 @@ Content-Type: application/json
   "projectId": 1,
   "description": "Product management service",
   "multilingual": true,
+  "project_name": "E Commerce API",
   "ast": {
     "table": {
       "name": "products",
@@ -110,6 +111,7 @@ Content-Type: application/json
   "projectId": 1,
   "description": "Category management service",
   "multilingual": false,
+  "project_name": "E Commerce API",
   "ast": {
     "table": {
       "name": "categories",

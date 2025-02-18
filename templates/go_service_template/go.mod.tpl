@@ -1,4 +1,4 @@
-module samplePath
+module {{.Service.ProjectName | ToCamelCase}}
 
 go 1.23.2
 

@@ -3,6 +3,7 @@ package functions
 import (
 	"fmt"
 	"generator/service/ast"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -35,65 +36,41 @@ func ToLowerFirst(s string) string {
 	return strings.ToLower(s[:1]) + s[1:]
 }
 
-func ToCamelCase(str string) string {
+func ToCamelCase(input string) string {
+	words := strings.FieldsFunc(input, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
 
-	if len(str) == 0 {
-		return str
+	for i := range words {
+		words[i] = strings.Title(strings.ToLower(words[i]))
 	}
 
-	str = strings.TrimSpace(str)
-
-	var result strings.Builder
-
-	for i, r := range str {
-
-		if i == 0 || i == len(str)-1 {
-			result.WriteRune(unicode.ToLower(r))
-			continue
-		}
-
-		switch {
-		case i == 0 || i == len(str)-1:
-			result.WriteRune(unicode.ToLower(r))
-		case unicode.IsUpper(r):
-			result.WriteRune('_')
-			result.WriteRune(unicode.ToLower(r))
-		case unicode.IsSpace(r):
-			result.WriteRune(r)
-		default:
-			result.WriteRune(r)
-		}
-
-	}
-
-	return result.String()
+	return strings.Join(words, "")
 }
 
-func ToSnakeCase(str string) string {
+func ToSnakeCase(input string) string {
+	var result []rune
 
-	if len(str) == 0 {
-		return str
-	}
-
-	var result strings.Builder
-
-	for i, r := range str {
-
-		switch {
-		case i == 0 || i == len(str)-1:
-			result.WriteRune(unicode.ToLower(r))
-		case unicode.IsUpper(r):
-			result.WriteRune('_')
-			result.WriteRune(unicode.ToLower(r))
-		case unicode.IsSpace(r):
-			result.WriteRune(r)
-		default:
-			result.WriteRune(r)
+	for i, r := range input {
+		if unicode.IsUpper(r) {
+			// Если это не первый символ и предыдущий не был разделителем, добавляем "_"
+			if i > 0 && (unicode.IsLower(rune(input[i-1])) || unicode.IsDigit(rune(input[i-1]))) {
+				result = append(result, '_')
+			}
+			result = append(result, unicode.ToLower(r))
+		} else if unicode.IsSpace(r) || r == '-' || r == '.' {
+			// Пробелы и дефисы заменяем на "_"
+			result = append(result, '_')
+		} else {
+			result = append(result, r)
 		}
-
 	}
 
-	return result.String()
+	// Убираем возможные лишние символы
+	snake := string(result)
+	snake = strings.ToLower(snake)
+	snake = regexp.MustCompile(`_+`).ReplaceAllString(snake, "_") // Убираем двойные "__"
+	return strings.Trim(snake, "_")                               // Убираем возможные "_" в начале/конце строки
 }
 
 func GormAnnotations(params ast.Field) string {

@@ -11,6 +11,7 @@ type PageServiceResponseType = response.PaginateResponse[*model.ServiceModel] //
 
 type CreateServiceDto struct {
 	Name         string  `json:"name"`
+	ProjectName  string  `json:"project_name"`
 	ProjectId    int     `json:"projectId"`
 	Description  string  `json:"description"`
 	Multilingual bool    `json:"multilingual"`
@@ -19,6 +20,7 @@ type CreateServiceDto struct {
 
 type UpdateServiceDto struct {
 	Name         *string  `json:"name"`
+	ProjectName  *string  `json:"project_name"`
 	ProjectId    *int     `json:"projectId"`
 	Description  *string  `json:"description"`
 	Multilingual *bool    `json:"multilingual"`

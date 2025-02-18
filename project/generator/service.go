@@ -53,7 +53,6 @@ func GetNestedFieldValue(obj interface{}, fieldPath string) (string, error) {
 }
 
 func Dirname(name string, service model.ServiceModel) (dirs []string, files map[string]io.ReadCloser) {
-
 	files = make(map[string]io.ReadCloser)
 
 	filepath.Walk(name, func(path string, info fs.FileInfo, err error) error {
@@ -66,16 +65,13 @@ func Dirname(name string, service model.ServiceModel) (dirs []string, files map[
 		result := parser.ReplaceWithTokens(path, p.ParsePlaceholders(), func(key string) string {
 			value, err := GetNestedFieldValue(service, key)
 			if err != nil {
-				// Handle error appropriately - maybe log it and return a default value
 				return ""
 			}
 			return value
 		})
 
 		result = filepath.Clean(result)
-
 		result = strings.TrimSuffix(result, ".tpl")
-
 		result = strings.TrimPrefix(result, filepath.Clean(name))
 
 		if info.IsDir() {
@@ -83,15 +79,10 @@ func Dirname(name string, service model.ServiceModel) (dirs []string, files map[
 			return nil
 		}
 
-		if _, err := os.Stat(filepath.Join(".", result)); err == nil {
-			return nil
-		}
-
+		// Open and add file to map regardless of whether it exists in destination
 		f, err := os.Open(path)
-		{
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
 		}
 		files[result] = f
 

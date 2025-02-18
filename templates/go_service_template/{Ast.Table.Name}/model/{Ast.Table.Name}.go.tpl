@@ -5,7 +5,7 @@ import (
 	"time"
     {{range $service.Ast.Table.Fields}}
     {{if .Relation}}
-    {{ .Relation.RefTable | ToCamelCase | ToLowerFirst}}Model "{{$service.ProjectName | ToSnakeCase}}/{{$service.Ast.Table.Name | ToSnakeCase}}/{{ .Relation.RefTable | ToSnakeCase}}/model"
+    {{ .Relation.RefTable | ToCamelCase | ToLowerFirst}}Model "{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToCamelCase}}/{{ .Relation.RefTable | ToSnakeCase}}/model"
     {{end}}
     {{end}}
 	"gorm.io/gorm"

@@ -100,6 +100,7 @@ func (s *serviceService) Create(serviceDto *dto.CreateServiceDto) (*response.ID,
 
 	service := model.ServiceModel{
 		Name:         serviceDto.Name,
+		ProjectName:  serviceDto.ProjectName,
 		ProjectId:    serviceDto.ProjectId,
 		Description:  serviceDto.Description,
 		Multilingual: serviceDto.Multilingual,

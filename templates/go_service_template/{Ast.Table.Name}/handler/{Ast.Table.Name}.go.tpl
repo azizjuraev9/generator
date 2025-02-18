@@ -4,11 +4,9 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"{{$service.ProjectName | ToSnakeCase}}/{{$service.Ast.Table.Name | ToSnakeCase}}/dto"
-	_ "{{$service.ProjectName | ToSnakeCase}}/{{$service.Ast.Table.Name | ToSnakeCase}}/model"
-	"{{$service.ProjectName | ToSnakeCase}}/{{$service.Ast.Table.Name | ToSnakeCase}}/service" //
-	"strconv"
-	"strings"
+	"{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToCamelCase}}/dto"
+	_ "{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToCamelCase}}/model"
+	"{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToCamelCase}}/service"
 
 	"github.com/fobus1289/ufa_shared/http"
 	_ "github.com/fobus1289/ufa_shared/http/response"
@@ -29,13 +27,12 @@ func NewHandler(router *echo.Group, service service.{{$service.Ast.Table.Name | 
 
 
         {{range $service.Ast.FindRoute}}group.{{.Method | ToUpper}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
-        {{range $service.Ast.FindOneRoute}}group.{{.Method | ToLower}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
-        {{range $service.Ast.CreateRoute}}group.{{.Method | ToLower}}("{{.Route}}", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
-        {{range $service.Ast.UpdateRoute}}group.{{.Method | ToLower}}("{{.Route}}/:id", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
+        {{range $service.Ast.FindOneRoute}}group.{{.Method | ToUpper}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
+        {{range $service.Ast.CreateRoute}}group.{{.Method | ToUpper}}("{{.Route}}", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
+        {{range $service.Ast.UpdateRoute}}group.{{.Method | ToUpper}}("{{.Route}}/:id", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
 
 	}
 }
-
 
 {{range $service.Ast.CreateRoute}}
 // {{.Func | ToCamelCase | ToUpperFirst}} godoc
@@ -50,7 +47,7 @@ func NewHandler(router *echo.Group, service service.{{$service.Ast.Table.Name | 
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}{{.Route}} [{{.Method | ToLower}}]
-func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToSnakeCase | ToUpperFirst}}(c echo.Context) error {
+func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToCamelCase | ToUpperFirst}}(c echo.Context) error {
 	var createDto dto.Create{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto
 	{
 		if err := c.Bind(&createDto); err != nil {
@@ -81,29 +78,19 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 // @ID           {{.Func | ToCamelCase | ToUpperFirst}}
 // @Accept       json
 // @Produce      json
-{{range .Queries}}
-// @Param        {{.Name}} query {{.Type}} {{if .Required}}true{{else}}false{{end}} "{{.Name}}"
-{{end}}
-{{range .Path}}
-// @Param        {{.Name}} path {{.Type}} true "{{.Name}}"
-{{end}}
-{{range .Headers}}
-// @Param        {{.Name}} header {{.Type}} true "{{.Name}}"
-{{end}}
+{{range .Queries}}// @Param        {{.Name}} query {{.Type}} {{if .Required}}true{{else}}false{{end}} "{{.Name}}"{{end}}
+{{range .Path}}// @Param        {{.Name}} path {{.Type}} true "{{.Name}}"{{end}}
+{{range .Headers}}// @Param        {{.Name}} header {{.Type}} true "{{.Name}}"{{end}}
 // @Param        page query string false "Page number" default(1)
 // @Param        perpage query string false "Number of items per page" default(10)
 // @Success      200 {object} response.ID "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}{{.Route}}{{range .Path}}/{{"{"}}{{.Name}}{{"}"}}{{end}} [{{.Method | ToLower}}]
-func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToSnakeCase | ToUpperFirst}}(c echo.Context) error {
+func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToCamelCase | ToUpperFirst}}(c echo.Context) error {
 	var (
-	    {{range .Path}}
-        path{{.Name | ToCamelCase | ToUpperFirst}} = c.Param("{{.Name}}")
-        {{end}}
-        {{range .Headers}}
-        header{{.Name | ToCamelCase | ToUpperFirst}} = c.Request().Header.Get("{{.Name}}")
-        {{end}}
+	    {{range .Path}}path{{.Name | ToCamelCase | ToUpperFirst}} = c.Param("{{.Name}}"){{end}}
+        {{range .Headers}}header{{.Name | ToCamelCase | ToUpperFirst}} = c.Request().Header.Get("{{.Name}}"){{end}}
 		page     = c.QueryParam("page")
 		perPage  = c.QueryParam("perpage")
 		paginate = http.NewPaginate(page, perPage)
@@ -124,10 +111,7 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 	}
 
 	filter := func(tx *gorm.DB) *gorm.DB {
-
-        {{range .Joins}}
-        tx = tx.Joins("{{.Type}} JOIN {{.Table}} ON {{.Condition.Column}} {{.Condition.Op}} {{.Condition.Value}}")
-        {{end}}
+{{range .Joins}}tx = tx.Joins("{{.Type}} JOIN {{.Table}} ON {{.Condition.Column}} {{.Condition.Op}} {{.Condition.Value}}"){{end}}
 
         tx = tx.Select(
             {{range .Response.Fields}}
@@ -145,18 +129,12 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 	    }
 	    {{end}}
 	    {{end}}
-
-        {{range .Conditions}}
-		tx = tx.Where("{{.Column}} {{.Op}} ?", {{ .Value | ResolveValue }})
-		{{end}}
-
+        {{range .Conditions}}tx = tx.Where("{{.Column}} {{.Op}} ?", {{ .Value | ResolveValue }}){{end}}
 
 		return tx
 	}
 
-	{{range .Response.Preloads}}
-    filter = filter.Preload("{{.}}")
-    {{end}}
+	{{range .Response.Preloads}}filter = filter.Preload("{{.}}"){{end}}
 
 	pageData, err := e.service.Page(ctx, paginate.Take(), filter, limitFilter)
 	{
@@ -190,7 +168,7 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}{{.Route}}{{range .Path}}/{{"{"}}{{.Name}}{{"}"}}{{end}} [{{.Method | ToLower}}]
-func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToSnakeCase | ToUpperFirst}}(c echo.Context) error {
+func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToCamelCase | ToUpperFirst}}(c echo.Context) error {
 
     {{if gt (len .Queries) 0}}
     var queryDto dto.{{.Func | ToCamelCase | ToUpperFirst}}QueryDto
@@ -267,7 +245,7 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}/{id} [patch]
-func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToSnakeCase | ToUpperFirst}}(c echo.Context) error {
+func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToCamelCase | ToUpperFirst}}(c echo.Context) error {
 	var id int64
 	{
 		if !http.PathValue(c.Param("id")).TryInt64(&id) {
