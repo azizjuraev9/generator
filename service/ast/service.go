@@ -43,6 +43,7 @@ type BaseRoute struct {
 	Func       string  `json:"func"`
 	Role       *string `json:"role"`
 	Permission *string `json:"permission"`
+	Method     string  `json:"method"`
 } //@name BaseRoute
 
 type FindRouteDto struct {

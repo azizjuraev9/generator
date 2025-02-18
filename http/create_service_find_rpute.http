@@ -1,226 +1,183 @@
-# curl -X 'POST'
-#  'https://editor.swagger.io/service'
-#  -H 'accept: application/json'
-#  -H 'Content-Type: application/json'
-#  -d '{
-#  "ast": {
-#    "create_route": {
-#      "func": "string",
-#      "permission": "string",
-#      "role": "string",
-#      "route": "string",
-#      "table": "string"
-#    },
-#    "find_one_route": {
-#      "conditions": [
-#        {
-#          "column": "string",
-#          "op": "string",
-#          "value": "string"
-#        }
-#      ],
-#      "func": "string",
-#      "header": [
-#        {
-#          "name": "string",
-#          "required": true,
-#          "type": "string",
-#          "validator": "string"
-#        }
-#      ],
-#      "joins": [
-#        {
-#          "condition": "string",
-#          "table": "string",
-#          "type": "string"
-#        }
-#      ],
-#      "path": [
-#        {
-#          "name": "string",
-#          "required": true,
-#          "type": "string",
-#          "validator": "string"
-#        }
-#      ],
-#      "permission": "string",
-#      "queries": [
-#        {
-#          "name": "string",
-#          "required": true,
-#          "type": "string",
-#          "validator": "string"
-#        }
-#      ],
-#      "response": {
-#        "fields": [
-#          "string"
-#        ],
-#        "preloads": [
-#          "string"
-#        ]
-#      },
-#      "role": "string",
-#      "route": "string",
-#      "table": "string"
-#    },
-#    "find_route": {
-#      "conditions": [
-#        {
-#          "column": "string",
-#          "op": "string",
-#          "value": "string"
-#        }
-#      ],
-#      "func": "string",
-#      "header": [
-#        {
-#          "name": "string",
-#          "required": true,
-#          "type": "string",
-#          "validator": "string"
-#        }
-#      ],
-#      "joins": [
-#        {
-#          "condition": "string",
-#          "table": "string",
-#          "type": "string"
-#        }
-#      ],
-#      "path": [
-#        {
-#          "name": "string",
-#          "required": true,
-#          "type": "string",
-#          "validator": "string"
-#        }
-#      ],
-#      "permission": "string",
-#      "queries": [
-#        {
-#          "name": "string",
-#          "required": true,
-#          "type": "string",
-#          "validator": "string"
-#        }
-#      ],
-#      "response": {
-#        "fields": [
-#          "string"
-#        ],
-#        "preloads": [
-#          "string"
-#        ]
-#      },
-#      "role": "string",
-#      "route": "string",
-#      "table": "string"
-#    },
-#    "table": {
-#      "fields": [
-#        {
-#          "default": "string",
-#          "is_null": true,
-#          "is_translatable": true,
-#          "name": "string",
-#          "relation": {
-#            "ref_column": "string",
-#            "ref_table": "string",
-#            "table": "string"
-#          },
-#          "type": "string"
-#        }
-#      ],
-#      "table": "string"
-#    },
-#    "update_route": {
-#      "func": "string",
-#      "permission": "string",
-#      "role": "string",
-#      "route": "string",
-#      "table": "string"
-#    }
-#  },
-#  "description": "string",
-#  "multilingual": true,
-#  "name": "string",
-#  "projectId": 0
-#}'
+### Create Service - Product Service
 POST http://localhost:1236/api/v1/service
-accept: application/json
 Content-Type: application/json
 
 {
+  "name": "product",
+  "projectId": 1,
+  "description": "Product management service",
+  "multilingual": true,
   "ast": {
     "table": {
+      "name": "products",
       "fields": [
         {
-          "default": "",
-          "is_null": true,
-          "is_translatable": true,
-          "name": "title",
-          "type": "string"
+          "name": "name",
+          "type": "string",
+          "isNull": false
         },
         {
-          "default": "null",
-          "is_null": true,
-          "is_translatable": true,
+          "name": "price",
+          "type": "decimal",
+          "isNull": false
+        },
+        {
           "name": "description",
-          "type": "string"
+          "type": "string",
+          "isNull": true
         },
         {
-          "default": "false",
-          "is_null": false,
-          "is_translatable": false,
-          "name": "status",
-          "type": "boolean"
+          "name": "category",
+          "type": "string",
+          "isNull": false
+        },
+        {
+          "name": "stock",
+          "type": "int",
+          "isNull": false,
+          "default": "0"
         }
-      ],
-      "table": "category"
+      ]
     },
     "find_route": [
       {
-        "conditions": [
+        "route": "/search",
+        "method": "GET",
+        "func": "search",
+        "queries": [
           {
-            "column": "status",
-            "op": "=",
-            "value": "bool.true"
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "column": "name",
+            "op": "ILIKE"
           },
           {
-            "column": "id",
-            "op": "=",
-            "value": "path.id"
+            "name": "category",
+            "type": "string",
+            "required": false,
+            "column": "category",
+            "op": "="
           }
         ],
-        "func": "findOne",
-        "header": [],
-        "joins": [],
+        "response": {
+          "fields": ["id", "name", "price", "category", "stock"],
+          "preloads": []
+        }
+      }
+    ],
+    "find_one_route": [
+      {
+        "route": "/:id",
+        "method": "GET",
+        "func": "getById",
         "path": [
           {
             "name": "id",
-            "required": true,
-            "type": "int64",
-            "validator": "int64"
+            "type": "int",
+            "required": true
           }
         ],
-        "queries": [],
         "response": {
-          "fields": [
-            "title",
-            "description"
-          ],
+          "fields": ["*"],
           "preloads": []
-        },
-        "route": "/api/v1/category/{id}"
+        }
+      }
+    ],
+    "create_route": [
+      {
+        "route": "",
+        "method": "POST",
+        "func": "create"
+      }
+    ],
+    "update_route": [
+      {
+        "route": "/:id",
+        "method": "PATCH",
+        "func": "update"
       }
     ]
-  },
-  "description": "string",
-  "multilingual": true,
-  "name": "string",
-  "projectId": 1
+  }
 }
 
-###
+### Create Service - Category Service
+POST http://localhost:1236/api/v1/service
+Content-Type: application/json
 
+{
+  "name": "category",
+  "projectId": 1,
+  "description": "Category management service",
+  "multilingual": false,
+  "ast": {
+    "table": {
+      "name": "categories",
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "isNull": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "isNull": true
+        },
+        {
+          "name": "parent_id",
+          "type": "int",
+          "isNull": true,
+          "relation": {
+            "table": "categories",
+            "type": "many-to-one",
+            "refColumn": "id"
+          }
+        }
+      ]
+    },
+    "find_route": [
+      {
+        "route": "/list",
+        "method": "GET",
+        "func": "list",
+        "response": {
+          "fields": ["id", "name", "description"],
+          "preloads": []
+        }
+      }
+    ],
+    "find_one_route": [
+      {
+        "route": "/:id",
+        "method": "GET",
+        "func": "getById",
+        "path": [
+          {
+            "name": "id",
+            "type": "int",
+            "required": true
+          }
+        ],
+        "response": {
+          "fields": ["*"],
+          "preloads": []
+        }
+      }
+    ],
+    "create_route": [
+      {
+        "route": "",
+        "method": "POST",
+        "func": "create"
+      }
+    ],
+    "update_route": [
+      {
+        "route": "/:id",
+        "method": "PATCH",
+        "func": "update"
+      }
+    ]
+  }
+}

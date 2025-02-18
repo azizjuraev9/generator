@@ -1,21 +1,10 @@
-# curl -X 'POST'
-#  'https://editor.swagger.io/project'
-#  -H 'accept: application/json'
-#  -H 'Content-Type: application/json'
-#  -d '{
-#  "description": "string",
-#  "name": "string",
-#  "userId": 0
-#}'
+
+### Create Project
 POST http://localhost:1236/api/v1/project
-accept: application/json
 Content-Type: application/json
 
 {
-  "description": "Test Project",
-  "name": "Test Project",
-  "userId": 1
+  "name": "E-Commerce API",
+  "userId": 1,
+  "description": "RESTful API for e-commerce platform"
 }
-
-###
-

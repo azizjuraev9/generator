@@ -4,9 +4,9 @@ import (
 	"log"
 	"strconv"
     {{range .Services}}
-	{{toLower .Ast.Table.Name}}Handler "{{toSnakeCase $.ProjectName}}/{{toLower .Ast.Table.Name}}/handler"
-	{{toLower .Ast.Table.Name}}Model "{{toSnakeCase $.ProjectName}}/{{toLower .Ast.Table.Name}}/model"
-	{{toLower .Ast.Table.Name}}Service "{{toSnakeCase $.ProjectName}}/{{toLower .Ast.Table.Name}}/service"
+	{{ToLower .Ast.Table.Name}}Handler "{{ToSnakeCase $.ProjectName}}/{{ToLower .Ast.Table.Name}}/handler"
+	{{ToLower .Ast.Table.Name}}Model "{{ToSnakeCase $.ProjectName}}/{{ToLower .Ast.Table.Name}}/model"
+	{{ToLower .Ast.Table.Name}}Service "{{ToSnakeCase $.ProjectName}}/{{ToLower .Ast.Table.Name}}/service"
     {{end}}
 
 	"gorm.io/gorm"
@@ -38,7 +38,7 @@ func main() {
 
 		db.AutoMigrate(
             {{range .Services}}
-			{{toLower .Ast.Table.Name}}Model.{{toUpperFirst .Ast.Table.Name}}Model{},
+			{{ToLower .Ast.Table.Name}}Model.{{ToUpperFirst .Ast.Table.Name}}Model{},
             {{end}}
 		)
 	}
@@ -69,7 +69,7 @@ func createHandlers(router *echo.Echo, db *gorm.DB) {
 	group := router.Group("/api/v1")
 	{
         {{range .Services}}
-		{{toLower .Ast.Table.Name}}Handler.NewHandler(group, {{toLower .Ast.Table.Name}}Service.NewService(db))
+		{{ToLower .Ast.Table.Name}}Handler.NewHandler(group, {{ToLower .Ast.Table.Name}}Service.NewService(db))
         {{end}}
 	}
 }

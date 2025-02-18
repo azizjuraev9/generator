@@ -2,6 +2,7 @@ package functions
 
 import (
 	"fmt"
+	"generator/service/ast"
 	"strconv"
 	"strings"
 	"unicode"
@@ -20,14 +21,25 @@ func ToTitle(s string) string {
 }
 
 func ToUpperFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+
 	return strings.ToUpper(s[:1]) + s[1:]
 }
 
 func ToLowerFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
 	return strings.ToLower(s[:1]) + s[1:]
 }
 
 func ToCamelCase(str string) string {
+
+	if len(str) == 0 {
+		return str
+	}
 
 	str = strings.TrimSpace(str)
 
@@ -58,6 +70,11 @@ func ToCamelCase(str string) string {
 }
 
 func ToSnakeCase(str string) string {
+
+	if len(str) == 0 {
+		return str
+	}
+
 	var result strings.Builder
 
 	for i, r := range str {
@@ -79,7 +96,7 @@ func ToSnakeCase(str string) string {
 	return result.String()
 }
 
-func GormAnnotations(params interface{}) string {
+func GormAnnotations(params ast.Field) string {
 
 	var annotations []string
 
@@ -91,7 +108,7 @@ func GormAnnotations(params interface{}) string {
 	return strings.Join(annotations, ";")
 }
 
-func GormFields(fields []interface{}) string {
+func GormFields(fields []ast.Field) string {
 	var gormFields []string
 	for _, field := range fields {
 		var gormField = "\t"

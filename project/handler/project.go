@@ -63,7 +63,7 @@ func (e *projectHandler) Generate(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	filter := func(tx *gorm.DB) *gorm.DB {
-		return tx.Where("id = ?", id).Where("is_visible = ?", true)
+		return tx.Where("id = ?", id).Preload("Services")
 	}
 
 	project, err := e.service.FindOne(ctx, filter)
@@ -73,7 +73,7 @@ func (e *projectHandler) Generate(c echo.Context) error {
 		}
 	}
 
-	generator.Generate("./templates", "./generated"+project.Name, project.Services)
+	generator.Generate("D:\\projects\\organisation_service\\templates\\go_service_template", "D:\\projects\\organisation_service\\generated\\"+project.Name, project.Services)
 
 	return http.Response(c).OK(project)
 }
@@ -232,7 +232,7 @@ func (e *projectHandler) GetById(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	filter := func(tx *gorm.DB) *gorm.DB {
-		return tx.Where("id = ?", id).Where("is_visible = ?", true)
+		return tx.Where("id = ?", id).Preload("Services")
 	}
 
 	project, err := e.service.FindOne(ctx, filter)

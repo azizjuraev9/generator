@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"generator/project/generator/functions"
 	"generator/service/model"
 	"github.com/fobus1289/parser"
@@ -14,7 +15,7 @@ import (
 	"text/template"
 )
 
-func GetNestedFieldValue(obj interface{}, fieldPath string) string {
+func GetNestedFieldValue(obj interface{}, fieldPath string) (string, error) {
 	v := reflect.ValueOf(obj)
 
 	// Ensure we are dealing with a struct or a pointer to a struct
@@ -23,7 +24,7 @@ func GetNestedFieldValue(obj interface{}, fieldPath string) string {
 	}
 
 	if v.Kind() != reflect.Struct {
-		panic("expected a struct or pointer to struct")
+		return "", fmt.Errorf("expected a struct or pointer to struct, got %v", v.Kind())
 	}
 
 	// Split fieldPath into parts
@@ -35,16 +36,20 @@ func GetNestedFieldValue(obj interface{}, fieldPath string) string {
 
 		// Check if field exists
 		if !v.IsValid() {
-			panic("field not found")
+			return "", fmt.Errorf("field %s not found", fieldName)
 		}
 
 		// Dereference pointer if the field is a pointer
 		if v.Kind() == reflect.Ptr {
+			if v.IsNil() {
+				return "", fmt.Errorf("field %s is nil", fieldName)
+			}
 			v = v.Elem()
 		}
 	}
 
-	return v.Interface().(string)
+	// Convert the final value to string
+	return fmt.Sprint(v.Interface()), nil
 }
 
 func Dirname(name string, service model.ServiceModel) (dirs []string, files map[string]io.ReadCloser) {
@@ -59,7 +64,12 @@ func Dirname(name string, service model.ServiceModel) (dirs []string, files map[
 		p := parser.NewParser(path)
 
 		result := parser.ReplaceWithTokens(path, p.ParsePlaceholders(), func(key string) string {
-			return GetNestedFieldValue(service, key)
+			value, err := GetNestedFieldValue(service, key)
+			if err != nil {
+				// Handle error appropriately - maybe log it and return a default value
+				return ""
+			}
+			return value
 		})
 
 		result = filepath.Clean(result)
@@ -92,29 +102,34 @@ func Dirname(name string, service model.ServiceModel) (dirs []string, files map[
 }
 
 func Generate(templatePath string, dest string, services []model.ServiceModel) {
-
 	for _, service := range services {
-
 		dirs, files := Dirname(templatePath, service)
 
+		// Create directories
 		for _, dir := range dirs {
 			dir := filepath.Join(dest, dir)
 			os.MkdirAll(dir, 0755)
 		}
 
+		// Process each file
 		for name, file := range files {
-			f, err := os.Create(filepath.Join(dest, name))
-			defer file.Close()
+			// Read template content
+			var buff bytes.Buffer
+			_, err := io.Copy(&buff, file)
 			if err != nil {
 				panic(err)
 			}
-			defer f.Close()
+			file.Close()
 
-			var buff bytes.Buffer
+			// Create output file
+			outputPath := filepath.Join(dest, name)
+			f, err := os.Create(outputPath)
+			if err != nil {
+				panic(err)
+			}
 
-			io.Copy(&buff, file)
-
-			tmpl := template.Must(template.New(f.Name()).Funcs(template.FuncMap{
+			// Create and execute template
+			tmpl := template.Must(template.New(name).Funcs(template.FuncMap{
 				"ToUpper":      functions.ToUpper,
 				"ToLower":      functions.ToLower,
 				"ToTitle":      functions.ToTitle,
@@ -122,9 +137,19 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 				"ToLowerFirst": functions.ToLowerFirst,
 				"ToCamelCase":  functions.ToCamelCase,
 				"ToSnakeCase":  functions.ToSnakeCase,
+				"ResolveValue": functions.ResolveValue,
+				"GormFields":   functions.GormFields,
 			}).Parse(buff.String()))
-			tmpl.Execute(f, service)
+
+			err = tmpl.Execute(f, map[string]interface{}{
+				"Service":  service,
+				"Services": services,
+			})
+			if err != nil {
+				panic(err)
+			}
+
+			f.Close()
 		}
 	}
-
 }
