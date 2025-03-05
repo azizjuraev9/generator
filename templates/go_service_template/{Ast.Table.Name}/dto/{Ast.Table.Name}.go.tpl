@@ -3,22 +3,16 @@ package dto
 import (
 	"{{.Service.ProjectName | ToCamelCase}}/{{.Service.Ast.Table.Name | ToSnakeCase}}/model"
 
-	"github.com/fobus1289/ufa_shared/http/response" //
+	"github.com/fobus1289/ufa_shared/http/response"
 )
 
 type Page{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseType = response.PaginateResponse[*model.{{.Service.Ast.Table.Name | ToUpperFirst}}Model] // @name Page{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseType
 
-type Create{{.Service.Ast.Table.Name | ToUpperFirst}}Dto struct {
-{{range $field := .Service.Ast.Table.Fields}}
-	{{$field.Name | ToUpperFirst}} {{$field.Type | ToSnakeCase}} `json:"{{$field.Name | ToSnakeCase}}"`
-{{end}}
-} //@name Create{{.Service.Ast.Table.Name | ToUpperFirst}}Dto
-
-type Update{{.Service.Ast.Table.Name | ToUpperFirst}}Dto struct {
+type Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto struct {
 {{range $field := .Service.Ast.Table.Fields}}
 	{{$field.Name | ToUpperFirst}} *{{$field.Type | ToSnakeCase}} `json:"{{$field.Name | ToSnakeCase}}"`
 {{end}}
-} //@name Update{{.Service.Ast.Table.Name | ToUpperFirst}}Dto
+} //@name Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto
 
 {{range .Service.Ast.FindRoute}}
 {{if gt (len .Queries) 0}}

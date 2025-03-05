@@ -11,14 +11,41 @@ import (
 	"gorm.io/gorm"
 )
 
-type {{$service.Ast.Table.Name | ToUpperFirst}}Model struct {
+type {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model struct {
 	Id        int64           `json:"id" gorm:"primaryKey"`
+    {{range $service.Ast.Table.Fields}}
+    {{if not .IsTranslatable}}
+    {{. | GormField}}
+    {{end}}
+    {{end}}
     {{$service.Ast.Table.Fields | GormFields}}
+    Translations *[]{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel `json:"translations" gorm:"foreignKey:{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id"`
 	CreatedAt *time.Time      `json:"createdAt" gorm:"autoCreateTime:true"`
 	UpdatedAt *time.Time      `json:"updatedAt,omitempty" gorm:"autoUpdateTime:true"`
 	DeletedAt *gorm.DeletedAt `json:"-" swaggerignore:"true"`
 }
 
+{{if $service.Multilingual}}
+type {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel struct {
+	Id                                              int64   `json:"id" gorm:"primaryKey"`
+	LanguageId                                      int64   `json:"language_id" gorm:"column:language_id; uniqueIndex:idx_{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id_language_id"`
+	{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id int64    `json:"{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id" gorm:"column:{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id; uniqueIndex:idx_{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id_language_id"`
+    {{range $service.Ast.Table.Fields}}
+    {{if .IsTranslatable}}
+    {{. | GormField}}
+    {{end}}
+    {{end}}
+    {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}    {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model   `json:"{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}},omitempty" gorm:"foreignKey:{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id"`
+	CreatedAt                                       *time.Time      `json:"createdAt" gorm:"autoCreateTime:true"`
+	UpdatedAt                                       *time.Time      `json:"updatedAt,omitempty" gorm:"autoUpdateTime:true"`
+	DeletedAt                                       *gorm.DeletedAt `json:"-" swaggerignore:"true"`
+}
+{{end}}
+
 func ({{$service.Ast.Table.Name | ToUpperFirst}}Model) TableName() string {
-	return "{{$service.Ast.Table.Name}}"
+	return "{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}"
+}
+
+func ({{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel) TableName() string {
+	return "{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_translations"
 }

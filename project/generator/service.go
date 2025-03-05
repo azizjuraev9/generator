@@ -130,6 +130,7 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 				"ToSnakeCase":  functions.ToSnakeCase,
 				"ResolveValue": functions.ResolveValue,
 				"GormFields":   functions.GormFields,
+				"GormField":    functions.GormField,
 			}).Parse(buff.String()))
 
 			err = tmpl.Execute(f, map[string]interface{}{

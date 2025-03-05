@@ -78,19 +78,19 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 // @ID           {{.Func | ToCamelCase | ToUpperFirst}}
 // @Accept       json
 // @Produce      json
-{{range .Queries}}// @Param        {{.Name}} query {{.Type}} {{if .Required}}true{{else}}false{{end}} "{{.Name}}"{{end}}
-{{range .Path}}// @Param        {{.Name}} path {{.Type}} true "{{.Name}}"{{end}}
-{{range .Headers}}// @Param        {{.Name}} header {{.Type}} true "{{.Name}}"{{end}}
-// @Param        page query string false "Page number" default(1)
+{{range .Queries}}// @Param        {{.Name}} query {{.Type}} {{if .Required}}true{{else}}false{{end}} "{{.Name}}"
+{{end}}{{range .Path}}// @Param        {{.Name}} path {{.Type}} true "{{.Name}}"
+{{end}}{{range .Headers}}// @Param        {{.Name}} header {{.Type}} true "{{.Name}}"
+{{end}}// @Param        page query string false "Page number" default(1)
 // @Param        perpage query string false "Number of items per page" default(10)
 // @Success      200 {object} response.ID "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}{{.Route}}{{range .Path}}/{{"{"}}{{.Name}}{{"}"}}{{end}} [{{.Method | ToLower}}]
 func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Func | ToCamelCase | ToUpperFirst}}(c echo.Context) error {
-	var (
-	    {{range .Path}}path{{.Name | ToCamelCase | ToUpperFirst}} = c.Param("{{.Name}}"){{end}}
-        {{range .Headers}}header{{.Name | ToCamelCase | ToUpperFirst}} = c.Request().Header.Get("{{.Name}}"){{end}}
+	var ({{range .Path}}
+	    path{{.Name | ToCamelCase | ToUpperFirst}} = c.Param("{{.Name}}"){{end}}{{range .Headers}}
+	    header{{.Name | ToCamelCase | ToUpperFirst}} = c.Request().Header.Get("{{.Name}}"){{end}}
 		page     = c.QueryParam("page")
 		perPage  = c.QueryParam("perpage")
 		paginate = http.NewPaginate(page, perPage)
@@ -112,25 +112,18 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 
 	filter := func(tx *gorm.DB) *gorm.DB {
 {{range .Joins}}tx = tx.Joins("{{.Type}} JOIN {{.Table}} ON {{.Condition.Column}} {{.Condition.Op}} {{.Condition.Value}}"){{end}}
-
-        tx = tx.Select(
-            {{range .Response.Fields}}
-            "{{.}}",
-            {{end}}
+        tx = tx.Select({{range .Response.Fields}}
+            "{{.}}",{{end}}
         )
-
-	    {{if gt (len .Queries) 0}}
-	    {{range $query := .Queries}}
+	    {{if gt (len .Queries) 0}}{{range $query := .Queries}}
 	    if queryDto.{{$query.Name | ToUpperFirst}} != nil {
             {{if or (eq $query.Op "LIKE") (eq $query.Op "ILIKE")}}
             *queryDto.{{$query.Name | ToUpperFirst}} = fmt.Sprintf("%%%s%%", *queryDto.{{$query.Name | ToUpperFirst}})
             {{end}}
             tx = tx.Where("{{$query.Column | ToLowerFirst}} {{$query.Op}} ?", *queryDto.{{$query.Name | ToUpperFirst}})
 	    }
-	    {{end}}
-	    {{end}}
+	    {{end}}{{end}}
         {{range .Conditions}}tx = tx.Where("{{.Column}} {{.Op}} ?", {{ .Value | ResolveValue }}){{end}}
-
 		return tx
 	}
 
@@ -154,16 +147,10 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 // @ID           {{.Func | ToCamelCase | ToUpperFirst}}
 // @Accept       json
 // @Produce      json
-{{range .Queries}}
-// @Param        {{.Name}} query {{.Type}} {{if .Required}}true{{else}}false{{end}} "{{.Name}}"
-{{end}}
-{{range .Path}}
-// @Param        {{.Name}} path {{.Type}} true "{{.Name}}"
-{{end}}
-{{range .Headers}}
-// @Param        {{.Name}} header {{.Type}} true "{{.Name}}"
-{{end}}
-// @Param        id path string true "{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} ID"
+{{range .Queries}}// @Param        {{.Name}} query {{.Type}} {{if .Required}}true{{else}}false{{end}} "{{.Name}}"
+{{end}}{{range .Path}}// @Param        {{.Name}} path {{.Type}} true "{{.Name}}"
+{{end}}{{range .Headers}}// @Param        {{.Name}} header {{.Type}} true "{{.Name}}"
+{{end}}// @Param        id path string true "{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} ID"
 // @Success      200 {object} model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"

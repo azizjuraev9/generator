@@ -96,23 +96,78 @@ func (s *{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Page(c
 	return response.NewPaginateResponse(totalPages, {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}s), nil
 }
 
-func (s *{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Create({{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Create{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto) (*response.ID, error) {
+func (s {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Upsert({{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Upsert{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto, languageId int64, {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id *int64) (*model.{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error) {
+	var result model.{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
 
-	{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} := model.{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model{
-		Name: {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.Name,
-	}
+	err := s.db.Transaction(func(tx *gorm.DB) error {
 
-	if err := s.db.Create(&{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}).Error; err != nil {
+		{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} := model.{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model{
+		    {{range $service.Ast.Table.Fields}}
+            {{if not .IsTranslatable}}
+            {{.Name | ToUpperFirst}}: {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.{{.Name | ToUpperFirst}},
+            {{end}}
+            {{end}}
+		}
+
+		if {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id == nil {
+			if err := tx.Create(&{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}).Error; err != nil {
+				return err
+			}
+			{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id = &{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}.Id
+		}else {
+			var existing{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}} model.{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+			if err := tx.First(&existing{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}, *{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id).Error; err != nil {
+				return err
+			}
+
+			if err := tx.Model(&existing{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}).Updates(&{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}).Error; err != nil {
+				return err
+			}
+		}
+        {{if $service.Multilingual}}
+		{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Translation := model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel
+		    {{range $service.Ast.Table.Fields}}
+            {{if .IsTranslatable}}
+            {{.Name | ToUpperFirst}}: {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.{{.Name | ToUpperFirst}},
+            {{end}}
+            {{end}}
+		}
+
+		if err := tx.Clauses(clauseOnConflict()).Save(&{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Translation).Error; err != nil {
+			return err
+		}
+
+		{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}.Translations = *[]model.{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel{{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Translation}
+
+		{{end}}
+		result = {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}
+
+		return nil
+	})
+
+	if err != nil {
 		return nil, err
 	}
 
-	return &response.ID{Id: {{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}.Id}, nil
+	return &result, nil
 }
-
-func (s *{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Update({{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Update{{.Service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto, scopes ...ServiceScope) error {
-	return s.Model().Scopes(scopes...).Updates({{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto).Error
+{{if $service.Multilingual}}
+func clauseOnConflict() clause.OnConflict {
+	return clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: "news_lang_group_id"},
+			{Name: "language_id"},
+		},
+		DoUpdates: clause.AssignmentColumns([]string{
+		    {{range $service.Ast.Table.Fields}}
+            {{if .IsTranslatable}}
+            ""{{.Name | ToUpperFirst}}"
+            {{end}}
+            {{end}}
+		}),
+	}
 }
-
+{{end}}
 func (s *{{.Service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Delete(scopes ...ServiceScope) error {
 	return s.Model().Scopes(scopes...).Delete(nil).Error
 }
