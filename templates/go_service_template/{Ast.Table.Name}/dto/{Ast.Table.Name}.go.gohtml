@@ -6,11 +6,17 @@ import (
 	"github.com/fobus1289/ufa_shared/http/response"
 )
 
-type Page{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseType = response.PaginateResponse[*model.{{.Service.Ast.Table.Name | ToUpperFirst}}Model] // @name Page{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseType
+type Page{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseType = response.PaginateResponse[*{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto] // @name Page{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseType
 
 type Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto struct {
 {{range $field := .Service.Ast.Table.Fields}}
-	{{$field.Name | ToUpperFirst}} *{{$field.Type | ToSnakeCase}} `json:"{{$field.Name | ToSnakeCase}}"`
+	{{$field.Name | ToUpperFirst}} {{if $field.IsNull}}*{{end}}{{$field.Type | ToSnakeCase}} `json:"{{$field.Name | ToSnakeCase}}"`
+{{end}}
+} //@name Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto
+
+type {{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto struct {
+{{range $field := .Service.Ast.Table.Fields}}
+    {{$field.Name | ToUpperFirst}} *{{$field.Type | ToSnakeCase}} `json:"{{$field.Name | ToSnakeCase}}"`
 {{end}}
 } //@name Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto
 

@@ -6,6 +6,7 @@ import (
 	"generator/project/generator/functions"
 	"generator/service/model"
 	"github.com/fobus1289/parser"
+	"go/format"
 	"io"
 	"io/fs"
 	"os"
@@ -71,7 +72,7 @@ func Dirname(name string, service model.ServiceModel) (dirs []string, files map[
 		})
 
 		result = filepath.Clean(result)
-		result = strings.TrimSuffix(result, ".tpl")
+		result = strings.TrimSuffix(result, ".gohtml")
 		result = strings.TrimPrefix(result, filepath.Clean(name))
 
 		if info.IsDir() {
@@ -94,6 +95,18 @@ func Dirname(name string, service model.ServiceModel) (dirs []string, files map[
 
 func Generate(templatePath string, dest string, services []model.ServiceModel) {
 	for _, service := range services {
+
+		hasTranslatableFields := false
+		if service.Multilingual {
+			for _, field := range service.Ast.Table.Fields {
+				hasTranslatableFields = hasTranslatableFields || field.IsTranslatable
+			}
+		}
+
+		if !hasTranslatableFields && service.Multilingual {
+			panic("Multilingual service must have at least one translatable field")
+		}
+
 		dirs, files := Dirname(templatePath, service)
 
 		// Create directories
@@ -112,12 +125,7 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 			}
 			file.Close()
 
-			// Create output file
-			outputPath := filepath.Join(dest, name)
-			f, err := os.Create(outputPath)
-			if err != nil {
-				panic(err)
-			}
+			var outBuff = bytes.Buffer{}
 
 			// Create and execute template
 			tmpl := template.Must(template.New(name).Funcs(template.FuncMap{
@@ -133,7 +141,7 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 				"GormField":    functions.GormField,
 			}).Parse(buff.String()))
 
-			err = tmpl.Execute(f, map[string]interface{}{
+			err = tmpl.Execute(&outBuff, map[string]interface{}{
 				"Service":  service,
 				"Services": services,
 			})
@@ -141,7 +149,29 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 				panic(err)
 			}
 
-			f.Close()
+			formatted, err := format.Source(outBuff.Bytes())
+			if err != nil && strings.HasSuffix(name, ".go") {
+				fmt.Println(name)
+				fmt.Println(outBuff.String())
+				fmt.Println("Ошибка форматирования:", err)
+				os.Exit(1)
+			} else {
+				formatted = outBuff.Bytes()
+			}
+
+			//formatted := outBuff.Bytes()
+
+			// Create output file
+			outputPath := filepath.Join(dest, name)
+			f, err := os.Create(outputPath)
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			if _, err := f.Write(formatted); err != nil {
+				return
+			}
 		}
 	}
 }

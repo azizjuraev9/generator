@@ -1,0 +1,179 @@
+package service
+{{$service := .Service}}
+
+import (
+	"context"
+	"math"
+	"{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToSnakeCase}}/dto"
+	"{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToSnakeCase}}/model"{{if $service.Multilingual}}
+	"gorm.io/gorm/clause"{{end}}
+
+	"github.com/fobus1289/ufa_shared/http/response"
+	"gorm.io/gorm"
+)
+
+type ServiceScope = func(d *gorm.DB) *gorm.DB
+
+type {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Service interface {
+	FindOne(ctx context.Context, scopes ...ServiceScope) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error)
+	Find(ctx context.Context, scopes ...ServiceScope) ([]model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error)
+	Page(ctx context.Context, take int, filter, limitFilter ServiceScope) (*dto.Page{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}ResponseType, error){{if $service.Multilingual}}
+	Upsert({{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Upsert{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto, languageId int64, {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id *int64) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error){{else}}
+	Upsert({{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Upsert{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto, {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id *int64) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error){{end}}
+	Delete(scopes ...ServiceScope) error
+}
+
+type {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service struct {
+	db *gorm.DB
+}
+
+func NewService(db *gorm.DB) {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Service {
+	return &{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service{db}
+}
+
+func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) ModelWithContext(ctx context.Context) *gorm.DB {
+	return s.db.WithContext(ctx).Model(&model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model{})
+}
+
+func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Model() *gorm.DB {
+	return s.db.Model(&model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model{})
+}
+
+func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) FindOne(ctx context.Context, scopes ...ServiceScope) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error) {
+
+	var {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+	{
+		err := s.ModelWithContext(ctx).
+			Scopes(scopes...).
+			First(&{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}).
+			Error
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}, nil
+}
+
+func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Find(ctx context.Context, scopes ...ServiceScope) ([]model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error) {
+
+	var moreModels []model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+	{
+		err := s.ModelWithContext(ctx).
+			Scopes(scopes...).
+			Find(&moreModels).
+			Error
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return moreModels, nil
+}
+
+func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Page(ctx context.Context, take int, filter, limitFilter ServiceScope) (*dto.Page{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}ResponseType, error) {
+
+	tx := s.ModelWithContext(ctx)
+
+	var total int64
+	{
+		txTotal := tx.Scopes(filter).Count(&total)
+		if err := txTotal.Error; err != nil {
+			return nil, err
+		}
+	}
+
+	var {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}s []*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+	{
+		if err := tx.Scopes(filter, limitFilter).
+			Find(&{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}s).Error; err != nil {
+			return nil, err
+		}
+	}
+
+	totalPages := int64(math.Ceil(float64(total) / float64(take)))
+
+	return response.NewPaginateResponse(totalPages, {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}s), nil
+}
+
+{{if $service.Multilingual}}
+func (s {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Upsert({{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Upsert{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto, languageId int64, {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id *int64) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error) {
+{{else}}
+func (s {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Upsert({{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Upsert{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto, {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id *int64) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error) {
+{{end}}
+	var result model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+
+	err := s.db.Transaction(func(tx *gorm.DB) error {
+
+		{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} := model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model{
+		    {{range $service.Ast.Table.Fields}}
+            {{if not .IsTranslatable}}
+            {{.Name | ToUpperFirst}}: {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.{{.Name | ToUpperFirst}},
+            {{end}}
+            {{end}}
+		}
+
+		if {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id == nil {
+			if err := tx.Create(&{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}).Error; err != nil {
+				return err
+			}
+			{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id = &{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}.Id
+		}else {
+			var existing{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}} model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+			if err := tx.First(&existing{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}, *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id).Error; err != nil {
+				return err
+			}
+
+			if err := tx.Model(&existing{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}).Updates(&{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}).Error; err != nil {
+				return err
+			}
+		}
+        {{if $service.Multilingual}}
+		{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Translation := model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel{
+		    {{range $service.Ast.Table.Fields}}{{if .IsTranslatable}}
+            {{.Name | ToUpperFirst}}: {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.{{.Name | ToUpperFirst}},
+            {{end}}{{end}}
+			{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id: *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id,
+			LanguageId:      languageId,
+		}
+
+		if err := tx.Clauses(clauseOnConflict()).Save(&{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Translation).Error; err != nil {
+			return err
+		}
+
+		{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}.Translations = &[]model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel{{"{"}}{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Translation}
+
+		{{end}}
+		result = {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+{{if $service.Multilingual}}
+func clauseOnConflict() clause.OnConflict {
+	return clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: "{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id"},
+			{Name: "language_id"},
+		},
+		DoUpdates: clause.AssignmentColumns([]string{
+		    {{range $service.Ast.Table.Fields}}
+            {{if .IsTranslatable}}
+            "{{.Name | ToUpperFirst}}",
+            {{end}}
+            {{end}}
+		}),
+	}
+}
+{{end}}
+func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Delete(scopes ...ServiceScope) error {
+	return s.Model().Scopes(scopes...).Delete(nil).Error
+}

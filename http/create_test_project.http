@@ -1,0 +1,216 @@
+### Create Organisation
+POST http://localhost:1236/api/v1/organisation
+Content-Type: application/json
+
+{
+  "name": "Sample Company"
+}
+
+
+### Create Project
+POST http://localhost:1236/api/v1/project
+Content-Type: application/json
+
+{
+  "name": "E-Commerce API",
+  "userId": 1,
+  "description": "RESTful API for e-commerce platform"
+}
+
+
+### Create Service - Product Service
+POST http://localhost:1236/api/v1/service
+Content-Type: application/json
+
+{
+  "name": "product",
+  "projectId": 1,
+  "description": "Product management service",
+  "multilingual": true,
+  "project_name": "E Commerce API",
+  "ast": {
+    "table": {
+      "name": "products",
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "is_translatable": true,
+          "isNull": false
+        },
+        {
+          "name": "price",
+          "type": "int8",
+          "isNull": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "is_translatable": true,
+          "isNull": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "isNull": false
+        },
+        {
+          "name": "stock",
+          "type": "int8",
+          "isNull": false,
+          "default": "0"
+        }
+      ]
+    },
+    "find_route": [
+      {
+        "route": "/search",
+        "method": "GET",
+        "func": "search",
+        "queries": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "column": "name",
+            "op": "ILIKE"
+          },
+          {
+            "name": "category",
+            "type": "string",
+            "required": false,
+            "column": "category",
+            "op": "="
+          }
+        ],
+        "response": {
+          "fields": ["id", "name", "price", "category", "stock"],
+          "preloads": []
+        }
+      }
+    ],
+    "find_one_route": [
+      {
+        "route": "/",
+        "method": "GET",
+        "func": "getById",
+        "path": [
+          {
+            "name": "id",
+            "type": "int",
+            "required": true
+          }
+        ],
+        "conditions": [
+          {
+            "column": "id",
+            "op": "=",
+            "value": "path.id"
+          }
+        ],
+        "response": {
+          "fields": ["*"],
+          "preloads": []
+        }
+      }
+    ],
+    "create_route": [
+      {
+        "route": "",
+        "method": "POST",
+        "func": "create"
+      }
+    ],
+    "update_route": [
+      {
+        "route": "/:id",
+        "method": "PATCH",
+        "func": "update"
+      }
+    ]
+  }
+}
+
+### Create Service - Category Service
+POST http://localhost:1236/api/v1/service
+Content-Type: application/json
+
+{
+  "name": "category",
+  "projectId": 1,
+  "description": "Category management service",
+  "multilingual": false,
+  "project_name": "E Commerce API",
+  "ast": {
+    "table": {
+      "name": "categories",
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "is_translatable": true,
+          "isNull": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "is_translatable": true,
+          "isNull": true
+        },
+        {
+          "name": "parent_id",
+          "type": "int64",
+          "isNull": true,
+          "relation": {
+            "table": "categories",
+            "type": "many-to-one",
+            "refColumn": "id"
+          }
+        }
+      ]
+    },
+    "find_route": [
+      {
+        "route": "/list",
+        "method": "GET",
+        "func": "list",
+        "response": {
+          "fields": ["id", "name", "description"],
+          "preloads": []
+        }
+      }
+    ],
+    "find_one_route": [
+      {
+        "route": "/:id",
+        "method": "GET",
+        "func": "getById",
+        "path": [
+          {
+            "name": "id",
+            "type": "int",
+            "required": true
+          }
+        ],
+        "response": {
+          "fields": ["*"],
+          "preloads": []
+        }
+      }
+    ],
+    "create_route": [
+      {
+        "route": "",
+        "method": "POST",
+        "func": "create"
+      }
+    ],
+    "update_route": [
+      {
+        "route": "/:id",
+        "method": "PATCH",
+        "func": "update"
+      }
+    ]
+  }
+}

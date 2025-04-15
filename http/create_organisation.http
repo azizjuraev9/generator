@@ -1,7 +1,0 @@
-### Create Organisation
-POST http://localhost:1236/api/v1/organisation
-Content-Type: application/json
-
-{
-  "name": "Sample Company"
-}
