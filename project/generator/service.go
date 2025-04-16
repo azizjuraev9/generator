@@ -139,6 +139,7 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 				"ResolveValue": functions.ResolveValue,
 				"GormFields":   functions.GormFields,
 				"GormField":    functions.GormField,
+				"GenRoute":     functions.GenRoute,
 			}).Parse(buff.String()))
 
 			err = tmpl.Execute(&outBuff, map[string]interface{}{

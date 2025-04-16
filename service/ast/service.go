@@ -36,6 +36,11 @@ type Relation struct {
 
 type Route interface {
 	GetRoute() string
+	GetFunc() string
+	GetRole() *string
+	GetPermission() *string
+	GetMethod() string
+	GetPath() []QueryParam
 }
 
 type BaseRoute struct {
@@ -90,18 +95,102 @@ type Condition struct {
 	Value  string `json:"value"`
 } //@name Condition
 
-func (r FindRouteDto) GetRoute() string {
-	return r.Route
-}
-
-func (r FindOneRouteDto) GetRoute() string {
-	return r.Route
-}
-
+// CreateRouteDto --------------------------------------------->
 func (r CreateRouteDto) GetRoute() string {
 	return r.Route
 }
 
+func (r CreateRouteDto) GetFunc() string {
+	return r.Func
+}
+
+func (r CreateRouteDto) GetRole() *string {
+	return r.Role
+}
+
+func (r CreateRouteDto) GetPermission() *string {
+	return r.Permission
+}
+
+func (r CreateRouteDto) GetMethod() string {
+	return r.Method
+}
+
+func (r CreateRouteDto) GetPath() []QueryParam {
+	return []QueryParam{}
+}
+
+// UpdateRouteDto --------------------------------------------->
 func (r UpdateRouteDto) GetRoute() string {
 	return r.Route
+}
+
+func (r UpdateRouteDto) GetFunc() string {
+	return r.Func
+}
+
+func (r UpdateRouteDto) GetRole() *string {
+	return r.Role
+}
+
+func (r UpdateRouteDto) GetPermission() *string {
+	return r.Permission
+}
+
+func (r UpdateRouteDto) GetMethod() string {
+	return r.Method
+}
+
+func (r UpdateRouteDto) GetPath() []QueryParam {
+	return []QueryParam{}
+}
+
+// FindRouteDto --------------------------------------------->
+func (r FindRouteDto) GetRoute() string {
+	return r.Route
+}
+
+func (r FindRouteDto) GetFunc() string {
+	return r.Func
+}
+
+func (r FindRouteDto) GetRole() *string {
+	return r.Role
+}
+
+func (r FindRouteDto) GetPermission() *string {
+	return r.Permission
+}
+
+func (r FindRouteDto) GetMethod() string {
+	return r.Method
+}
+
+func (r FindRouteDto) GetPath() []QueryParam {
+	return r.Path
+}
+
+// FindOneRouteDto --------------------------------------------->
+func (r FindOneRouteDto) GetRoute() string {
+	return r.Route
+}
+
+func (r FindOneRouteDto) GetFunc() string {
+	return r.Func
+}
+
+func (r FindOneRouteDto) GetRole() *string {
+	return r.Role
+}
+
+func (r FindOneRouteDto) GetPermission() *string {
+	return r.Permission
+}
+
+func (r FindOneRouteDto) GetMethod() string {
+	return r.Method
+}
+
+func (r FindOneRouteDto) GetPath() []QueryParam {
+	return r.Path
 }

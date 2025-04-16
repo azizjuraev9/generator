@@ -197,3 +197,28 @@ func ResolveValue(value string) interface{} {
 		return value
 	}
 }
+
+func GenRoute(route ast.Route) string {
+	routeStr := "group."
+	routeStr += ToUpper(route.GetMethod())
+	routeStr += "(\""
+	routeStr += route.GetRoute()
+
+	if route.GetRoute() == "" && len(route.GetPath()) == 0 {
+		routeStr += "/"
+	}
+
+	for _, path := range route.GetPath() {
+
+		if string(routeStr[len(routeStr)-1:]) != "/" {
+			routeStr += "/"
+		}
+
+		routeStr += ":" + path.Name
+	}
+
+	routeStr += "\", handler."
+	routeStr += ToUpperFirst(ToCamelCase(route.GetFunc()))
+
+	return routeStr + ")"
+}

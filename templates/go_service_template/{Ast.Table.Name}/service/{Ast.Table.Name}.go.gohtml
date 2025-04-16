@@ -15,8 +15,8 @@ import (
 type ServiceScope = func(d *gorm.DB) *gorm.DB
 
 type {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Service interface {
-	FindOne(ctx context.Context, scopes ...ServiceScope) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error)
-	Find(ctx context.Context, scopes ...ServiceScope) ([]model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error)
+	FindOne(ctx context.Context, scopes ...ServiceScope) (*dto.{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto, error)
+	Find(ctx context.Context, scopes ...ServiceScope) ([]dto.{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto, error)
 	Page(ctx context.Context, take int, filter, limitFilter ServiceScope) (*dto.Page{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}ResponseType, error){{if $service.Multilingual}}
 	Upsert({{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Upsert{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto, languageId int64, {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id *int64) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error){{else}}
 	Upsert({{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto *dto.Upsert{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto, {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id *int64) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error){{end}}
@@ -39,9 +39,9 @@ func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Model(
 	return s.db.Model(&model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model{})
 }
 
-func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) FindOne(ctx context.Context, scopes ...ServiceScope) (*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error) {
+func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) FindOne(ctx context.Context, scopes ...ServiceScope) (*dto.{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto, error) {
 
-	var {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+	var {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} dto.{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto
 	{
 		err := s.ModelWithContext(ctx).
 			Scopes(scopes...).
@@ -56,7 +56,7 @@ func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) FindOn
 	return &{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}, nil
 }
 
-func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Find(ctx context.Context, scopes ...ServiceScope) ([]model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model, error) {
+func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Find(ctx context.Context, scopes ...ServiceScope) ([]dto.{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto, error) {
 
 	var moreModels []model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
 	{
@@ -85,7 +85,7 @@ func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Page(c
 		}
 	}
 
-	var {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}s []*model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+	var {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}s []*dto.{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto
 	{
 		if err := tx.Scopes(filter, limitFilter).
 			Find(&{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}s).Error; err != nil {

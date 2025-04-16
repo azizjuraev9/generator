@@ -123,7 +123,7 @@ Content-Type: application/json
     ],
     "update_route": [
       {
-        "route": "/:id",
+        "route": "/",
         "method": "PATCH",
         "func": "update"
       }
@@ -182,7 +182,7 @@ Content-Type: application/json
     ],
     "find_one_route": [
       {
-        "route": "/:id",
+        "route": "/",
         "method": "GET",
         "func": "getById",
         "path": [
@@ -207,7 +207,7 @@ Content-Type: application/json
     ],
     "update_route": [
       {
-        "route": "/:id",
+        "route": "/",
         "method": "PATCH",
         "func": "update"
       }

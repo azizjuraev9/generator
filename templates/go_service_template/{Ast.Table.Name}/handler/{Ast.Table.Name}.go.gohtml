@@ -26,10 +26,11 @@ func NewHandler(router *echo.Group, service service.{{$service.Ast.Table.Name | 
 		handler := &{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler{service: service}
 
 
-        {{range $service.Ast.FindRoute}}group.{{.Method | ToUpper}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
-        {{range $service.Ast.FindOneRoute}}group.{{.Method | ToUpper}}("{{.Route}}{{range .Path}}/:{{.Name}}{{end}}", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
-        {{range $service.Ast.CreateRoute}}group.{{.Method | ToUpper}}("{{.Route}}", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
-        {{range $service.Ast.UpdateRoute}}group.{{.Method | ToUpper}}("{{.Route}}/:id", handler.{{.Func | ToCamelCase | ToUpperFirst}}){{end}}
+        {{range $service.Ast.FindRoute}}{{ . | GenRoute}}{{end}}
+        {{range $service.Ast.FindOneRoute}}{{ . | GenRoute}}{{end}}
+        {{range $service.Ast.CreateRoute}}{{ . | GenRoute}}{{end}}
+        {{range $service.Ast.UpdateRoute}}{{ . | GenRoute}}{{end}}
+		group.DELETE("/:id", handler.Delete)
 
 	}
 }
@@ -65,8 +66,8 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 		}
 	}
     {{if $service.Multilingual}}
-	idDto, err := e.service.Upsert(&createDto, languageId){{else}}
-	idDto, err := e.service.Upsert(&createDto){{end}}
+	idDto, err := e.service.Upsert(&createDto, languageId, nil){{else}}
+	idDto, err := e.service.Upsert(&createDto, nil){{end}}
 	{
 		if err != nil {
 			return http.HTTPError(err).BadRequest()
@@ -113,12 +114,9 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 		}
 	}
 
-	filter := func(tx *gorm.DB) *gorm.DB {
-		return tx.Where("id", id)
-	}
     {{if $service.Multilingual}}
-	idDto, err := e.service.Upsert(&createDto, languageId, id){{else}}
-	idDto, err := e.service.Upsert(&createDto, id){{end}}
+	_, err := e.service.Upsert(&updateDto, languageId, &id){{else}}
+	_, err := e.service.Upsert(&updateDto, &id){{end}}
 	{
 		if err != nil {
 			return http.HTTPError(err).BadRequest()
