@@ -150,14 +150,16 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 				panic(err)
 			}
 
-			formatted, err := format.Source(outBuff.Bytes())
-			if err != nil && strings.HasSuffix(name, ".go") {
+			if strings.HasSuffix(name, ".go") {
 				fmt.Println(name)
-				fmt.Println(outBuff.String())
-				fmt.Println("Ошибка форматирования:", err)
-				os.Exit(1)
-			} else {
-				formatted = outBuff.Bytes()
+				tmpFormat, err := format.Source(outBuff.Bytes())
+				if err != nil {
+					fmt.Println("Ошибка форматирования:", err)
+					os.Exit(1)
+				}
+
+				newBuff := bytes.NewBuffer(tmpFormat)
+				outBuff = *newBuff
 			}
 
 			//formatted := outBuff.Bytes()
@@ -170,7 +172,7 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 			}
 			defer f.Close()
 
-			if _, err := f.Write(formatted); err != nil {
+			if _, err := f.Write(outBuff.Bytes()); err != nil {
 				return
 			}
 		}
