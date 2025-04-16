@@ -130,7 +130,7 @@ func GormFields(fields []ast.Field) string {
 	return strings.Join(gormFields, "\n")
 }
 
-func GormField(field ast.Field) string {
+func GormField(field ast.Field, table string) string {
 	var gormField = ""
 
 	if field.Relation == nil || field.Relation.Type != "many-to-many" {
@@ -161,7 +161,15 @@ func GormField(field ast.Field) string {
 			gormField += "[]"
 		}
 
-		gormField += ToLowerFirst(field.Relation.Table) + "Model." + ToUpperFirst(field.Relation.Table) + "Model\t"
+		if field.Relation.Table == table {
+			if !field.IsNull {
+				gormField += "*"
+			}
+			gormField += ToUpperFirst(field.Relation.Table) + "Model\t"
+		} else {
+			gormField += ToLowerFirst(field.Relation.Table) + "Model." + ToUpperFirst(field.Relation.Table) + "Model\t"
+		}
+
 		gormField += "\t`json:\"" + ToSnakeCase(field.Relation.Table) + "\""
 
 		if field.Relation != nil {
@@ -177,6 +185,47 @@ func GormField(field ast.Field) string {
 			}
 		}
 		gormField += "`"
+	}
+
+	return gormField
+}
+
+func DtoFieldNil(field ast.Field) string {
+	return dtoField(field, true)
+}
+
+func DtoField(field ast.Field) string {
+	return dtoField(field, false)
+}
+
+func dtoField(field ast.Field, allNull bool) string {
+	var gormField = ""
+
+	if field.Relation == nil || field.Relation.Type != "many-to-many" {
+		gormField = "\t"
+
+		gormField += ToUpperFirst(ToCamelCase(field.Name)) + "\t"
+		if field.IsNull || allNull {
+			gormField += "*"
+		}
+		gormField += ToLower(field.Type)
+		gormField += "\t`json:\"" + ToSnakeCase(field.Name) + "\"`"
+	}
+
+	if field.Relation != nil && field.Relation.Type == "many-to-many" {
+
+		gormField += "\t"
+
+		gormField += ToUpperFirst(field.Relation.Table) + "\t"
+
+		if field.IsNull || allNull {
+			gormField += "*"
+		}
+		gormField += "[]"
+
+		gormField += ToLowerFirst(field.Relation.Table) + "Model." + ToUpperFirst(field.Relation.Table) + "Model\t"
+		gormField += "\t`json:\"" + ToSnakeCase(field.Relation.Table) + "\"`"
+
 	}
 
 	return gormField

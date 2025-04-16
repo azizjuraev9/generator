@@ -2,15 +2,15 @@ package model
 {{$service := .Service}}
 
 import (
-	"time"{{range $service.Ast.Table.Fields}}{{if .Relation}}
-    {{ .Relation.Table | ToCamelCase | ToLowerFirst}}Model "{{$service.ProjectName | ToCamelCase}}/{{.Relation.Table | ToSnakeCase | ToLowerFirst}}/model"{{end}}{{end}}
+	"time"{{range $service.Ast.Table.Fields}}{{if and .Relation (ne .Relation.Table $service.Ast.Table.Name)}}
+    {{ .Relation.Table | ToCamelCase | ToLowerFirst}}Model "{{$service.ProjectName | ToSnakeCase | ToLowerFirst}}/{{.Relation.Table | ToSnakeCase | ToLowerFirst}}/model"{{end}}{{end}}
 	"gorm.io/gorm"
 )
 
 type {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model struct {
 	Id        int64           `json:"id" gorm:"primaryKey"`{{range $service.Ast.Table.Fields}}{{if not .IsTranslatable}}
-{{. | GormField}}{{end}}{{end}}
-    Translations *[]{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel `json:"translations" gorm:"foreignKey:{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id"`
+{{ GormField . $service.Ast.Table.Name }}{{end}}{{end}}{{if $service.Multilingual}}
+	Translations *[]{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel `json:"translations" gorm:"foreignKey:{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id"`{{end}}
 	CreatedAt *time.Time      `json:"createdAt" gorm:"autoCreateTime:true"`
 	UpdatedAt *time.Time      `json:"updatedAt,omitempty" gorm:"autoUpdateTime:true"`
 	DeletedAt *gorm.DeletedAt `json:"-" swaggerignore:"true"`
@@ -21,7 +21,7 @@ type {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel st
 	Id                                              int64   `json:"id" gorm:"primaryKey"`
 	LanguageId                                      int64   `json:"language_id" gorm:"column:language_id; uniqueIndex:idx_{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id_language_id"`
 	{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id int64    `json:"{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id" gorm:"column:{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id; uniqueIndex:idx_{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id_language_id"`{{range $service.Ast.Table.Fields}}{{if .IsTranslatable}}
-{{. | GormField}}{{end}}{{end}}
+{{ GormField . $service.Ast.Table.Name }}{{end}}{{end}}
     {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}    {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model   `json:"{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}},omitempty" gorm:"foreignKey:{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id"`
 	CreatedAt                                       *time.Time      `json:"createdAt" gorm:"autoCreateTime:true"`
 	UpdatedAt                                       *time.Time      `json:"updatedAt,omitempty" gorm:"autoUpdateTime:true"`
@@ -32,7 +32,8 @@ type {{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel st
 func ({{$service.Ast.Table.Name | ToUpperFirst}}Model) TableName() string {
 	return "{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}"
 }
-
+{{if $service.Multilingual}}
 func ({{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel) TableName() string {
 	return "{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_translations"
 }
+{{end}}

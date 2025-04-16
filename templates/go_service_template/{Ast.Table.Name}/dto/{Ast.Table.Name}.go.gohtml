@@ -1,39 +1,34 @@
 package dto
 
+{{$service := .Service}}
+
 import (
-	"github.com/fobus1289/ufa_shared/http/response"
+	"github.com/fobus1289/ufa_shared/http/response"{{range $service.Ast.Table.Fields}}{{ if and .Relation (eq .Relation.Type "many-to-many") }}
+    {{ .Relation.Table | ToCamelCase | ToLowerFirst}}Model "{{$service.ProjectName | ToSnakeCase | ToLowerFirst}}/{{.Relation.Table | ToSnakeCase | ToLowerFirst}}/model"{{end}}{{end}}
 )
 
 type Page{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseType = response.PaginateResponse[*{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto] // @name Page{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseType
 
-type Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto struct {
-{{range $field := .Service.Ast.Table.Fields}}
-	{{$field.Name | ToUpperFirst}} {{if $field.IsNull}}*{{end}}{{$field.Type | ToSnakeCase}} `json:"{{$field.Name | ToSnakeCase}}"`
-{{end}}
+type Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto struct { {{range $field := .Service.Ast.Table.Fields}}
+	{{ $field | DtoField }}{{end}}
 } //@name Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto
 
-type {{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto struct {
-{{range $field := .Service.Ast.Table.Fields}}
-    {{$field.Name | ToUpperFirst}} *{{$field.Type | ToSnakeCase}} `json:"{{$field.Name | ToSnakeCase}}"`
-{{end}}
+type {{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto struct { {{range $field := .Service.Ast.Table.Fields}}
+    {{ $field | DtoFieldNil }}{{end}}
 } //@name Upsert{{.Service.Ast.Table.Name | ToUpperFirst}}Dto
 
 {{range .Service.Ast.FindRoute}}
 {{if gt (len .Queries) 0}}
-type {{.Func | ToCamelCase | ToUpperFirst}}QueryDto struct {
-    {{range $query := .Queries}}
-    {{$query.Name | ToUpperFirst}} {{if not $query.Required}}*{{end}}{{$query.Type | ToSnakeCase}} `json:"{{$query.Name | ToSnakeCase}}"`
-    {{end}}
+type {{.Func | ToCamelCase | ToUpperFirst}}QueryDto struct { {{range $query := .Queries}}
+    {{$query.Name | ToUpperFirst}} {{if not $query.Required}}*{{end}}{{$query.Type | ToSnakeCase}} `json:"{{$query.Name | ToSnakeCase}}"`{{end}}
 } //@name {{.Func | ToCamelCase | ToUpperFirst}}QueryDto
 {{end}}
 {{end}}
 
-{{range .Service.Ast.FindOneRoute}} //
+{{range .Service.Ast.FindOneRoute}}
 {{if gt (len .Queries) 0}}
-type {{.Func | ToCamelCase | ToUpperFirst}}QueryDto struct {
-    {{range $query := .Queries}}
-    {{$query.Name | ToUpperFirst}} {{if not $query.Required}}*{{end}}{{$query.Type | ToSnakeCase}} `json:"{{$query.Name | ToSnakeCase}}"`
-    {{end}}
+type {{.Func | ToCamelCase | ToUpperFirst}}QueryDto struct { {{range $query := .Queries}}
+    {{$query.Name | ToUpperFirst}} {{if not $query.Required}}*{{end}}{{$query.Type | ToSnakeCase}} `json:"{{$query.Name | ToSnakeCase}}"` {{end}}
 } //@name {{.Func | ToCamelCase | ToUpperFirst}}QueryDto
 {{end}}
 {{end}}

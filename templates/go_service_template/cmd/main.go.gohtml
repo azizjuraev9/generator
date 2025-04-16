@@ -4,9 +4,9 @@ import (
 	"log"
 	"strconv"
     {{range .Services}}
-	{{.Ast.Table.Name | ToLower}}Handler "{{.ProjectName | ToCamelCase}}/{{.Ast.Table.Name | ToLower}}/handler"
-	{{.Ast.Table.Name | ToLower}}Model "{{.ProjectName | ToCamelCase}}/{{.Ast.Table.Name | ToLower}}/model"
-	{{.Ast.Table.Name | ToLower}}Service "{{.ProjectName | ToCamelCase}}/{{.Ast.Table.Name | ToLower}}/service"
+	{{.Ast.Table.Name | ToLower}}Handler "{{.ProjectName | ToSnakeCase | ToLowerFirst}}/{{.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}/handler"
+	{{.Ast.Table.Name | ToLower}}Model "{{.ProjectName | ToSnakeCase | ToLowerFirst}}/{{.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}/model"
+	{{.Ast.Table.Name | ToLower}}Service "{{.ProjectName | ToSnakeCase | ToLowerFirst}}/{{.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}/service"
     {{end}}
 
 	"gorm.io/gorm"

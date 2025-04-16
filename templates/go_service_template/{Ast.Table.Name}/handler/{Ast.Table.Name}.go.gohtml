@@ -4,9 +4,9 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToCamelCase}}/dto"
-	_ "{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToCamelCase}}/model"
-	"{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToCamelCase}}/service"
+	"{{$service.ProjectName | ToSnakeCase | ToLowerFirst}}/{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}/dto"
+	_ "{{$service.ProjectName | ToSnakeCase | ToLowerFirst}}/{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}/model"
+	"{{$service.ProjectName | ToSnakeCase | ToLowerFirst}}/{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}/service"
 
 	"github.com/fobus1289/ufa_shared/http"
 	_ "github.com/fobus1289/ufa_shared/http/response"
@@ -86,7 +86,7 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 // @ID           {{.Func | ToCamelCase | ToUpperFirst}}
 // @Accept       json
 // @Param        id path string true "{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} ID"
-// @Param        input body dto.Update{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto true "{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} information"
+// @Param        input body dto.Upsert{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Dto true "{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} information"
 // @Success      204 "Successful operation"
 // @Failure      400 {object} response.ErrorResponse "Bad request"
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
@@ -252,10 +252,8 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 		tx = tx.Joins("INNER JOIN {{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_translations tr ON {{$service.Ast.Table.Name}}.id = tr.{{$service.Ast.Table.Name}}_id AND tr.language_id = ?", languageId)
 		{{end}}
 
-        tx = tx.Select(
-            {{range .Response.Fields}}
-            "{{.}}",
-            {{end}}
+        tx = tx.Select({{range .Response.Fields}}
+            "{{.}}",{{end}}
         )
 
         {{if gt (len .Queries) 0}}
@@ -266,12 +264,11 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
             {{end}}
             tx = tx.Where("{{$query.Column | ToLowerFirst}} {{$query.Op}} ?", *queryDto.{{$query.Name | ToUpperFirst}})
         }
-        {{end}}
-        {{end}}
+        {{end}}{{end}}
 
         {{range .Conditions}}
-        tx = tx.Where("{{.Column}} {{.Op}} ?", {{ .Value | ResolveValue }})
-        {{end}}
+        tx = tx.Where("{{.Column}} {{.Op}} ?", {{ .Value | ResolveValue }}){{end}}
+
 		{{range .Response.Preloads}}
 		tx = tx.Preload("{{.}}"){{end}}
 

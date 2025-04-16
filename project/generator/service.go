@@ -140,6 +140,8 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 				"GormFields":   functions.GormFields,
 				"GormField":    functions.GormField,
 				"GenRoute":     functions.GenRoute,
+				"DtoFieldNil":  functions.DtoFieldNil,
+				"DtoField":     functions.DtoField,
 			}).Parse(buff.String()))
 
 			err = tmpl.Execute(&outBuff, map[string]interface{}{
@@ -151,9 +153,9 @@ func Generate(templatePath string, dest string, services []model.ServiceModel) {
 			}
 
 			if strings.HasSuffix(name, ".go") {
-				fmt.Println(name)
 				tmpFormat, err := format.Source(outBuff.Bytes())
 				if err != nil {
+					fmt.Println(outBuff.String())
 					fmt.Println("Ошибка форматирования:", err)
 					os.Exit(1)
 				}

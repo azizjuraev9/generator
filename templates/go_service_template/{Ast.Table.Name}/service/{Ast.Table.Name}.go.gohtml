@@ -4,8 +4,8 @@ package service
 import (
 	"context"
 	"math"
-	"{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToSnakeCase}}/dto"
-	"{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToSnakeCase}}/model"{{if $service.Multilingual}}
+	"{{$service.ProjectName | ToSnakeCase | ToLowerFirst}}/{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}/dto"
+	"{{$service.ProjectName | ToSnakeCase | ToLowerFirst}}/{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}/model"{{if $service.Multilingual}}
 	"gorm.io/gorm/clause"{{end}}
 
 	"github.com/fobus1289/ufa_shared/http/response"
@@ -58,7 +58,7 @@ func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) FindOn
 
 func (s *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Find(ctx context.Context, scopes ...ServiceScope) ([]dto.{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto, error) {
 
-	var moreModels []model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model
+	var moreModels []dto.{{.Service.Ast.Table.Name | ToUpperFirst}}ResponseDto
 	{
 		err := s.ModelWithContext(ctx).
 			Scopes(scopes...).
@@ -107,12 +107,8 @@ func (s {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Upsert(
 
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 
-		{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} := model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model{
-		    {{range $service.Ast.Table.Fields}}
-            {{if not .IsTranslatable}}
-            {{.Name | ToUpperFirst}}: {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.{{.Name | ToUpperFirst}},
-            {{end}}
-            {{end}}
+		{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}} := model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Model{ {{range $service.Ast.Table.Fields}}{{if not .IsTranslatable}}
+            {{.Name | ToCamelCase | ToUpperFirst}}: {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.{{.Name | ToCamelCase | ToUpperFirst}},{{end}}{{end}}
 		}
 
 		if {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id == nil {
@@ -131,10 +127,8 @@ func (s {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Service) Upsert(
 			}
 		}
         {{if $service.Multilingual}}
-		{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Translation := model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel{
-		    {{range $service.Ast.Table.Fields}}{{if .IsTranslatable}}
-            {{.Name | ToUpperFirst}}: {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.{{.Name | ToUpperFirst}},
-            {{end}}{{end}}
+		{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Translation := model.{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}TranslationModel{ {{range $service.Ast.Table.Fields}}{{if .IsTranslatable}}
+            {{.Name | ToUpperFirst}}: {{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Dto.{{.Name | ToUpperFirst}},{{end}}{{end}}
 			{{$service.Ast.Table.Name | ToCamelCase | ToUpperFirst}}Id: *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Id,
 			LanguageId:      languageId,
 		}
@@ -164,12 +158,8 @@ func clauseOnConflict() clause.OnConflict {
 			{Name: "{{$service.Ast.Table.Name | ToSnakeCase | ToLowerFirst}}_id"},
 			{Name: "language_id"},
 		},
-		DoUpdates: clause.AssignmentColumns([]string{
-		    {{range $service.Ast.Table.Fields}}
-            {{if .IsTranslatable}}
-            "{{.Name | ToUpperFirst}}",
-            {{end}}
-            {{end}}
+		DoUpdates: clause.AssignmentColumns([]string{ {{range $service.Ast.Table.Fields}}{{if .IsTranslatable}}
+            "{{.Name | ToUpperFirst}}",{{end}} {{end}}
 		}),
 	}
 }

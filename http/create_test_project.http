@@ -166,17 +166,6 @@ Content-Type: application/json
           "isNull": true
         },
         {
-          "name": "product",
-          "type": "int64",
-          "relation": {
-            "table": "products",
-            "type": "many-to-many",
-            "ref_table": "products_categories",
-            "ref_column": "category_id"
-          },
-          "isNull": true
-        },
-        {
           "name": "parent_id",
           "type": "int64",
           "isNull": true,
@@ -209,6 +198,13 @@ Content-Type: application/json
             "name": "id",
             "type": "int",
             "required": true
+          }
+        ],
+        "conditions": [
+          {
+            "column": "id",
+            "op": "=",
+            "value": "path.id"
           }
         ],
         "response": {
