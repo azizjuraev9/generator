@@ -50,9 +50,15 @@ Content-Type: application/json
           "isNull": true
         },
         {
-          "name": "category",
-          "type": "string",
-          "isNull": false
+          "name": "categories",
+          "type": "int64",
+          "relation": {
+            "table": "categories",
+            "type": "many-to-many",
+            "ref_table": "products_categories",
+            "ref_column": "product_id"
+          },
+          "isNull": true
         },
         {
           "name": "stock",
@@ -110,7 +116,9 @@ Content-Type: application/json
         ],
         "response": {
           "fields": ["*"],
-          "preloads": []
+          "preloads": [
+              "Categories"
+          ]
         }
       }
     ],
@@ -155,6 +163,17 @@ Content-Type: application/json
           "name": "description",
           "type": "string",
           "is_translatable": true,
+          "isNull": true
+        },
+        {
+          "name": "product",
+          "type": "int64",
+          "relation": {
+            "table": "products",
+            "type": "many-to-many",
+            "ref_table": "products_categories",
+            "ref_column": "category_id"
+          },
           "isNull": true
         },
         {

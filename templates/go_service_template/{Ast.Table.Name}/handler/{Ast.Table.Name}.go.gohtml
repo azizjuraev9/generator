@@ -190,10 +190,10 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
 	    }
 	    {{end}}{{end}}
         {{range .Conditions}}tx = tx.Where("{{.Column}} {{.Op}} ?", {{ .Value | ResolveValue }}){{end}}
+		{{range .Response.Preloads}}
+		tx = tx.Preload("{{.}}"){{end}}
 		return tx
 	}
-	{{range .Response.Preloads}}
-	filter = filter.Preload("{{.}}"){{end}}
 
 	pageData, err := e.service.Page(ctx, paginate.Take(), filter, limitFilter)
 	{
@@ -272,13 +272,11 @@ func (e *{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}Handler) {{.Fun
         {{range .Conditions}}
         tx = tx.Where("{{.Column}} {{.Op}} ?", {{ .Value | ResolveValue }})
         {{end}}
+		{{range .Response.Preloads}}
+		tx = tx.Preload("{{.}}"){{end}}
 
         return tx
 	}
-
-	{{range .Response.Preloads}}
-    filter = filter.Preload("{{.}}")
-    {{end}}
 
 	{{$service.Ast.Table.Name | ToCamelCase | ToLowerFirst}}, err := e.service.FindOne(ctx, filter)
 	{

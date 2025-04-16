@@ -3,7 +3,7 @@ package model
 
 import (
 	"time"{{range $service.Ast.Table.Fields}}{{if .Relation}}
-    {{ .Relation.RefTable | ToCamelCase | ToLowerFirst}}Model "{{$service.ProjectName | ToCamelCase}}/{{$service.Ast.Table.Name | ToCamelCase}}/{{ .Relation.RefTable | ToSnakeCase}}/model"{{end}}{{end}}
+    {{ .Relation.Table | ToCamelCase | ToLowerFirst}}Model "{{$service.ProjectName | ToCamelCase}}/{{.Relation.Table | ToSnakeCase | ToLowerFirst}}/model"{{end}}{{end}}
 	"gorm.io/gorm"
 )
 

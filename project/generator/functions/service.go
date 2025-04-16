@@ -131,20 +131,25 @@ func GormFields(fields []ast.Field) string {
 }
 
 func GormField(field ast.Field) string {
-	var gormField = "\t"
+	var gormField = ""
 
-	gormField += ToUpperFirst(ToCamelCase(field.Name)) + "\t"
-	if field.IsNull {
-		gormField += "*"
-	}
-	gormField += ToLower(field.Type)
-	gormField += "\t`json:\"" + ToSnakeCase(field.Name) + "\" gorm:\"" + GormAnnotations(field) + "\"`"
-	if field.Relation != nil {
-		gormField += "\n\t"
+	if field.Relation == nil || field.Relation.Type != "many-to-many" {
+		gormField = "\t"
 
-		if field.Relation != nil && (field.Relation.Type == "one-to-many" || field.Relation.Type == "many-to-many") {
-			gormField += "[]"
+		gormField += ToUpperFirst(ToCamelCase(field.Name)) + "\t"
+		if field.IsNull {
+			gormField += "*"
 		}
+		gormField += ToLower(field.Type)
+		gormField += "\t`json:\"" + ToSnakeCase(field.Name) + "\" gorm:\"" + GormAnnotations(field) + "\"`"
+	}
+
+	if field.Relation != nil {
+		if field.Relation.Type != "many-to-many" {
+			gormField += "\n"
+		}
+
+		gormField += "\t"
 
 		gormField += ToUpperFirst(field.Relation.Table) + "\t"
 
@@ -152,18 +157,23 @@ func GormField(field ast.Field) string {
 			gormField += "*"
 		}
 
+		if field.Relation != nil && (field.Relation.Type == "one-to-many" || field.Relation.Type == "many-to-many") {
+			gormField += "[]"
+		}
+
 		gormField += ToLowerFirst(field.Relation.Table) + "Model." + ToUpperFirst(field.Relation.Table) + "Model\t"
 		gormField += "\t`json:\"" + ToSnakeCase(field.Relation.Table) + "\""
+
 		if field.Relation != nil {
 			switch field.Relation.Type {
 			case "one-to-one":
-				gormField += "foreignKey:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn)) + ";references:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn))
+				gormField += " gorm:\"foreignKey:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn)) + ";references:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn)) + "\""
 			case "one-to-many":
-				gormField += "foreignKey:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn)) + ";references:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn))
+				gormField += " gorm:\"foreignKey:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn)) + ";references:" + ToUpperFirst(ToCamelCase(field.Relation.RefColumn)) + "\""
 			case "many-to-one":
-				gormField += "foreignKey:" + ToUpperFirst(ToCamelCase(field.Name))
+				gormField += " gorm:\"foreignKey:" + ToUpperFirst(ToCamelCase(field.Name)) + "\""
 			case "many-to-many":
-				gormField += "many2many:" + ToSnakeCase(field.Relation.RefTable)
+				gormField += " gorm:\"many2many:" + ToSnakeCase(field.Relation.RefTable) + "\""
 			}
 		}
 		gormField += "`"
